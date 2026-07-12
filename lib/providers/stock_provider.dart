@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:molen_king_application/models/stock_model.dart';
-import 'package:molen_king_application/repositories/stock_repository.dart';
+import '../models/stock_model.dart';
+import '../repositories/stock_repository.dart';
 
 class StockProvider extends ChangeNotifier {
   final StockRepository repository;
@@ -10,45 +10,47 @@ class StockProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  List<StockModel> _stocks = [];
+  List<StockModel> _stockList = [];
 
-  // ======================
-  // GETTERS
-  // ======================
+  final Map<String, double> _molenPrices = {
+    'keju': 8000,
+    'ori': 7000,
+    'coklat': 9000,
+  };
 
   bool get isLoading => _isLoading;
 
   String? get errorMessage => _errorMessage;
 
-  List<StockModel> get stocks => _stocks;
+  List<StockModel> get stockList => _stockList;
 
-  // ======================
-  // LOAD STOCK
-  // ======================
+  Map<String, double> get molenPrices => _molenPrices;
+
+  Map<String, int> get stocks {
+    return {for (final stock in _stockList) stock.flavor: stock.quantity};
+  }
 
   Future<void> loadStocks() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      _stocks = await repository.getStocks();
+      _stockList = await repository.getStocks();
     } catch (e) {
       _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
-
-  // ======================
-  // UPDATE STOCK
-  // ======================
 
   Future<bool> updateStock({
     required String flavor,
     required int amountChange,
   }) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -66,12 +68,9 @@ class StockProvider extends ChangeNotifier {
     }
   }
 
-  // ======================
-  // RESET STOCK
-  // ======================
-
   Future<bool> resetStock(String flavor) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {

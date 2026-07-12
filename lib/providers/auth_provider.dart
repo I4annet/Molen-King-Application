@@ -7,11 +7,18 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider({required this.repository});
 
-  bool isLoggingIn = false;
+  bool _isLoading = false;
 
-  bool isRegistering = false;
+  String? _errorMessage;
 
-  String? errorMessage;
+  UserModel? _currentUser;
 
-  UserModel? currentUser;
-}
+  List<UserModel> _users = [];
+
+  bool get isLoading => _isLoading;
+
+  String? get errorMessage => _errorMessage;
+
+  UserModel? get currentUser => _currentUser;
+
+  List<UserModel> get users => _users;
