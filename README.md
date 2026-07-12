@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # molen_king_application
 
 A new Flutter project.
@@ -16,6 +15,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
-# Molen-King-Application
->>>>>>> 1a78c83ac961057dcb36cf01bba0ae78130bb6ab
