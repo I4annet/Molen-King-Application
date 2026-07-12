@@ -184,7 +184,9 @@ class _LoginViewState extends State<LoginView> {
                           shadows: [
                             Shadow(
                               blurRadius: 10.0,
-                              color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+                              color: Colors.black.withOpacity(
+                                isDark ? 0.5 : 0.1,
+                              ),
                               offset: const Offset(0, 3),
                             ),
                           ],
@@ -235,8 +237,10 @@ class _LoginViewState extends State<LoginView> {
                             isDark: isDark,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Email wajib diisi';
-                              if (!v.contains('@')) return 'Format email tidak valid';
+                              if (v == null || v.isEmpty)
+                                return 'Email wajib diisi';
+                              if (!v.contains('@'))
+                                return 'Format email tidak valid';
                               return null;
                             },
                           ),
@@ -264,8 +268,10 @@ class _LoginViewState extends State<LoginView> {
                               },
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Sandi wajib diisi';
-                              if (v.length < 6) return 'Sandi minimal 6 karakter';
+                              if (v == null || v.isEmpty)
+                                return 'Sandi wajib diisi';
+                              if (v.length < 6)
+                                return 'Sandi minimal 6 karakter';
                               return null;
                             },
                           ),
@@ -274,7 +280,7 @@ class _LoginViewState extends State<LoginView> {
                             builder: (context, state, _) {
                               return PremiumButton(
                                 text: 'Masuk Sekarang',
-                                isLoading: state.isLoading,
+                                isInitializing: state.isLogginIn,
                                 onPressed: _handleLogin,
                               );
                             },
@@ -329,7 +335,9 @@ class _LoginViewState extends State<LoginView> {
                               color: AppColors.royalHoneyGold.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: AppColors.royalHoneyGold.withOpacity(0.2),
+                                color: AppColors.royalHoneyGold.withOpacity(
+                                  0.2,
+                                ),
                               ),
                             ),
                             child: Column(

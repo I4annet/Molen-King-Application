@@ -16,7 +16,11 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _commentController = TextEditingController();
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
   final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
   @override
@@ -40,7 +44,10 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
       return;
     }
 
-    final success = await provider.addExpense(amount, _commentController.text.trim());
+    final success = await provider.addExpense(
+      amount,
+      _commentController.text.trim(),
+    );
 
     if (mounted) {
       if (success) {
@@ -56,7 +63,9 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Gagal menyimpan pengeluaran'),
+            content: Text(
+              provider.errorMessage ?? 'Gagal menyimpan pengeluaran',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -70,7 +79,9 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     // Filter expenses logged by this user (to keep it clean)
-    final myExpenses = provider.expenses.where((e) => e.cashierId == provider.currentUser?.id).toList();
+    final myExpenses = provider.expenses
+        .where((e) => e.cashierId == provider.currentUser?.id)
+        .toList();
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -106,21 +117,25 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
                     prefixIcon: Icons.money_off,
                     isDark: widget.isDark,
                     keyboardType: TextInputType.number,
-                    validator: (v) => (v == null || v.isEmpty) ? 'Nominal harus diisi' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Nominal harus diisi' : null,
                   ),
                   const SizedBox(height: 16),
                   PremiumTextField(
                     controller: _commentController,
                     labelText: 'Keterangan / Komentar Pengeluaran',
-                    hintText: 'Beli minyak goreng, isi ulang gas LPG, listrik, dll.',
+                    hintText:
+                        'Beli minyak goreng, isi ulang gas LPG, listrik, dll.',
                     prefixIcon: Icons.comment_outlined,
                     isDark: widget.isDark,
-                    validator: (v) => (v == null || v.isEmpty) ? 'Keterangan wajib diisi' : null,
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'Keterangan wajib diisi'
+                        : null,
                   ),
                   const SizedBox(height: 20),
                   PremiumButton(
                     text: 'Simpan Pengeluaran',
-                    isLoading: provider.isLoading,
+                    isInitializing: provider.isInitializing,
                     onPressed: () => _saveExpense(provider),
                     icon: Icons.save_outlined,
                   ),
@@ -142,7 +157,10 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.goldenCaramel.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -151,7 +169,9 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
                     'Total: ${myExpenses.length} transaksi',
                     style: TextStyle(
                       fontSize: 12,
-                      color: widget.isDark ? AppColors.softButterCream : AppColors.goldenCaramel,
+                      color: widget.isDark
+                          ? AppColors.softButterCream
+                          : AppColors.goldenCaramel,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -180,14 +200,19 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
                         return PremiumCard(
                           isDark: widget.isDark,
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           border: Border.all(
                             color: AppColors.error.withOpacity(0.2),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: AppColors.error.withOpacity(0.15),
+                                backgroundColor: AppColors.error.withOpacity(
+                                  0.15,
+                                ),
                                 child: const Icon(
                                   Icons.trending_down,
                                   color: AppColors.error,

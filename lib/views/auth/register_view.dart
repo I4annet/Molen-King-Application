@@ -19,7 +19,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _phoneController = TextEditingController();
   final _originController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   String _selectedRole = 'cashier'; // 'cashier' or 'admin'
   bool _obscurePassword = true;
 
@@ -84,10 +84,7 @@ class _RegisterViewState extends State<RegisterView> {
         ),
         title: Text(
           'Daftar Baru',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
       ),
       extendBodyBehindAppBar: true,
@@ -96,7 +93,10 @@ class _RegisterViewState extends State<RegisterView> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 12.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -107,7 +107,9 @@ class _RegisterViewState extends State<RegisterView> {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.royalHoneyGold : AppColors.goldenCaramel,
+                        color: isDark
+                            ? AppColors.royalHoneyGold
+                            : AppColors.goldenCaramel,
                         letterSpacing: 1.0,
                       ),
                     ),
@@ -143,7 +145,8 @@ class _RegisterViewState extends State<RegisterView> {
                                   label: const Text('Kasir / Karyawan'),
                                   selected: _selectedRole == 'cashier',
                                   onSelected: (selected) {
-                                    if (selected) setState(() => _selectedRole = 'cashier');
+                                    if (selected)
+                                      setState(() => _selectedRole = 'cashier');
                                   },
                                   selectedColor: AppColors.royalHoneyGold,
                                   backgroundColor: isDark
@@ -164,7 +167,8 @@ class _RegisterViewState extends State<RegisterView> {
                                   label: const Text('Admin / Pemilik'),
                                   selected: _selectedRole == 'admin',
                                   onSelected: (selected) {
-                                    if (selected) setState(() => _selectedRole = 'admin');
+                                    if (selected)
+                                      setState(() => _selectedRole = 'admin');
                                   },
                                   selectedColor: AppColors.goldenCaramel,
                                   backgroundColor: isDark
@@ -189,7 +193,9 @@ class _RegisterViewState extends State<RegisterView> {
                             hintText: 'Masukkan nama lengkap',
                             prefixIcon: Icons.person_outline,
                             isDark: isDark,
-                            validator: (v) => (v == null || v.isEmpty) ? 'Nama wajib diisi' : null,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Nama wajib diisi'
+                                : null,
                           ),
                           const SizedBox(height: 16),
                           PremiumTextField(
@@ -200,8 +206,10 @@ class _RegisterViewState extends State<RegisterView> {
                             isDark: isDark,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Email wajib diisi';
-                              if (!v.contains('@')) return 'Format email tidak valid';
+                              if (v == null || v.isEmpty)
+                                return 'Email wajib diisi';
+                              if (!v.contains('@'))
+                                return 'Format email tidak valid';
                               return null;
                             },
                           ),
@@ -213,7 +221,9 @@ class _RegisterViewState extends State<RegisterView> {
                             prefixIcon: Icons.phone_android_outlined,
                             isDark: isDark,
                             keyboardType: TextInputType.phone,
-                            validator: (v) => (v == null || v.isEmpty) ? 'Nomor HP wajib diisi' : null,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Nomor HP wajib diisi'
+                                : null,
                           ),
                           const SizedBox(height: 16),
                           PremiumTextField(
@@ -222,7 +232,9 @@ class _RegisterViewState extends State<RegisterView> {
                             hintText: 'Yogyakarta',
                             prefixIcon: Icons.location_city_outlined,
                             isDark: isDark,
-                            validator: (v) => (v == null || v.isEmpty) ? 'Asal daerah wajib diisi' : null,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Asal daerah wajib diisi'
+                                : null,
                           ),
                           const SizedBox(height: 16),
                           PremiumTextField(
@@ -248,8 +260,10 @@ class _RegisterViewState extends State<RegisterView> {
                               },
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Sandi wajib diisi';
-                              if (v.length < 6) return 'Sandi minimal 6 karakter';
+                              if (v == null || v.isEmpty)
+                                return 'Sandi wajib diisi';
+                              if (v.length < 6)
+                                return 'Sandi minimal 6 karakter';
                               return null;
                             },
                           ),
@@ -258,7 +272,7 @@ class _RegisterViewState extends State<RegisterView> {
                             builder: (context, state, _) {
                               return PremiumButton(
                                 text: 'Daftar Sekarang',
-                                isLoading: state.isLoading,
+                                isInitializing: state.isRegistering,
                                 onPressed: _handleRegister,
                               );
                             },
