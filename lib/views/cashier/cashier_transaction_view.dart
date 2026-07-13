@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:molen_king_application/providers/stock_provider.dart';
+import 'package:molen_king_application/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
+// import '../../providers/app_state_provider.dart';
 import '../../models/transaction_model.dart';
 import '../shared/widgets.dart';
 
@@ -45,7 +48,7 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
     }
   }
 
-  double _calculateTotal(AppStateProvider provider) {
+  double _calculateTotal(StockProvider provider) {
     double total = 0;
     _cart.forEach((flavor, qty) {
       total += (provider.molenPrices[flavor] ?? 0.0) * qty;
@@ -57,7 +60,11 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
     return _cart.values.every((qty) => qty == 0);
   }
 
-  void _checkout(AppStateProvider provider) async {
+  void _checkout(
+    TransactionProvider transactionProvider,
+    StockProvider stockProvider,
+    AuthProvider authProvider,
+  ) async {
     if (_isCartEmpty()) return;
 
     final List<TransactionItem> items = [];
@@ -67,13 +74,17 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
           TransactionItem(
             flavor: flavor,
             quantity: qty,
-            price: provider.molenPrices[flavor] ?? 0.0,
+            price: stockProvider.molenPrices[flavor] ?? 0.0,
           ),
         );
       }
     });
 
-    final success = await provider.createTransaction(items);
+    final success = await transactionProvider.createTransaction(
+      cashierId: authProvider.currentUser!.id,
+      cashierName: authProvider.currentUser!.name,
+      items: items,
+    );
 
     if (mounted) {
       if (success) {
@@ -89,7 +100,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Transaksi Gagal'),
+            content: Text(
+              transactionProvider.errorMessage ?? 'Transaksi Gagal',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -99,9 +112,13 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final stockProvider = Provider.of<StockProvider>(context);
+
+    final transactionProvider = Provider.of<TransactionProvider>(context);
+
+    final authProvider = Provider.of<AuthProvider>(context);
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
-    final total = _calculateTotal(provider);
+    final total = _calculateTotal(stockProvider);
 
     final List<Map<String, dynamic>> itemsList = [
       {
@@ -150,8 +167,8 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
               itemBuilder: (context, index) {
                 final item = itemsList[index];
                 final flavor = item['flavor'] as String;
-                final price = provider.molenPrices[flavor] ?? 0.0;
-                final stock = provider.stocks[flavor] ?? 0;
+                final price = stockProvider.molenPrices[flavor] ?? 0.0;
+                final stock = stockProvider.stocks[flavor] ?? 0;
                 final cartQty = _cart[flavor] ?? 0;
 
                 return PremiumCard(
@@ -297,8 +314,14 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                 const SizedBox(height: 16),
                 PremiumButton(
                   text: 'Selesaikan Transaksi',
-                  isInitializing: provider.isInitializing,
-                  onPressed: _isCartEmpty() ? () {} : () => _checkout(provider),
+                  isInitializing: transactionProvider.isLoading,
+                  onPressed: _isCartEmpty()
+                      ? () {}
+                      : () => _checkout(
+                          transactionProvider,
+                          stockProvider,
+                          authProvider,
+                        ),
                   icon: Icons.shopping_cart_checkout,
                 ),
               ],

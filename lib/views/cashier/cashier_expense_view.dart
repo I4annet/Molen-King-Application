@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:molen_king_application/providers/auth_provider.dart';
+import 'package:molen_king_application/providers/expense_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
 import '../shared/widgets.dart';
 
 class CashierExpenseView extends StatefulWidget {
@@ -30,7 +32,10 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
     super.dispose();
   }
 
-  void _saveExpense(AppStateProvider provider) async {
+  void _saveExpense(
+    ExpenseProvider expenseProvider,
+    AuthProvider authProvider,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
 
     final amount = double.tryParse(_amountController.text);
@@ -44,9 +49,14 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
       return;
     }
 
-    final success = await provider.addExpense(
-      amount,
-      _commentController.text.trim(),
+    final currentUser = authProvider.currentUser;
+    if (currentUser == null) return;
+
+    final success = await expenseProvider.addExpense(
+      cashierId: currentUser.id,
+      cashierName: currentUser.name,
+      amount: amount,
+      description: _commentController.text.trim(),
     );
 
     if (mounted) {
@@ -64,7 +74,7 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              provider.errorMessage ?? 'Gagal menyimpan pengeluaran',
+              expenseProvider.errorMessage ?? 'Gagal menyimpan pengeluaran',
             ),
             backgroundColor: AppColors.error,
           ),
@@ -75,14 +85,15 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final expenseProvider = Provider.of<ExpenseProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final currentUser = authProvider.currentUser;
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     // Filter expenses logged by this user (to keep it clean)
-    final myExpenses = provider.expenses
-        .where((e) => e.cashierId == provider.currentUser?.id)
+    final myExpenses = expenseProvider.expenses
+        .where((e) => e.cashierId == currentUser?.id)
         .toList();
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -135,8 +146,9 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
                   const SizedBox(height: 20),
                   PremiumButton(
                     text: 'Simpan Pengeluaran',
-                    isInitializing: provider.isInitializing,
-                    onPressed: () => _saveExpense(provider),
+                    isInitializing: expenseProvider.isLoading,
+                    onPressed: () =>
+                        _saveExpense(expenseProvider, authProvider),
                     icon: Icons.save_outlined,
                   ),
                 ],

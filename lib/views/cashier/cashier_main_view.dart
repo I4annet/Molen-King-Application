@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
+// import '../../providers/stock_provider.dart';
+// import '../../providers/transaction_provider.dart';
+import '../../providers/attendance_provider.dart';
 import '../../models/attendance_model.dart';
 import '../shared/widgets.dart';
 import '../auth/login_view.dart';
@@ -28,9 +32,14 @@ class _CashierMainViewState extends State<CashierMainView> {
     super.dispose();
   }
 
-  void _handleCheckIn(AppStateProvider provider) async {
+  void _handleCheckIn(
+    AttendanceProvider attendanceProvider,
+    AuthProvider authProvider,
+  ) async {
     final statusText = _attendanceStatus;
     final reason = _reasonController.text.trim();
+
+    final user = authProvider.currentUser;
 
     if ((statusText == 'sick' || statusText == 'leave') && reason.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,9 +51,18 @@ class _CashierMainViewState extends State<CashierMainView> {
       return;
     }
 
-    final success = await provider.checkIn(
-      statusText,
-      reason.isNotEmpty ? reason : null,
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("User belum login")));
+      return;
+    }
+
+    final success = await attendanceProvider.checkIn(
+      userId: user.id,
+      userName: user.name,
+      status: statusText,
+      reason: reason.isNotEmpty ? reason : null,
     );
     if (mounted && success) {
       _reasonController.clear();
@@ -61,7 +79,17 @@ class _CashierMainViewState extends State<CashierMainView> {
     }
   }
 
-  void _handleCheckOut(AppStateProvider provider) async {
+  void _handleCheckOut(
+    AttendanceProvider attendanceProvider,
+    AuthProvider authProvider,
+  ) async {
+    final user = authProvider.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("User belum login")));
+      return;
+    }
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -100,7 +128,7 @@ class _CashierMainViewState extends State<CashierMainView> {
     );
 
     if (confirm == true && mounted) {
-      final success = await provider.checkOut();
+      final success = await attendanceProvider.checkOut(userId: user.id);
       if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -112,7 +140,7 @@ class _CashierMainViewState extends State<CashierMainView> {
     }
   }
 
-  void _handleLogout(AppStateProvider provider) async {
+  void _handleLogout(AuthProvider provider) async {
     await provider.logout();
     if (mounted) {
       Navigator.pushReplacement(
@@ -124,8 +152,10 @@ class _CashierMainViewState extends State<CashierMainView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
-    final user = provider.currentUser;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final attendanceProvider = Provider.of<AttendanceProvider>(context);
+
+    final user = authProvider.currentUser;
     final isDark = _isDark;
     final textColor = isDark ? AppColors.textLight : AppColors.textDark;
 
@@ -209,7 +239,7 @@ class _CashierMainViewState extends State<CashierMainView> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.logout, color: AppColors.error),
-                      onPressed: () => _handleLogout(provider),
+                      onPressed: () => _handleLogout(authProvider),
                       tooltip: 'Keluar Akun',
                     ),
                   ],
@@ -225,7 +255,7 @@ class _CashierMainViewState extends State<CashierMainView> {
               // Main content body
               Expanded(
                 child: () {
-                  if (provider.isInitializing) {
+                  if (attendanceProvider.isLoading) {
                     return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.royalHoneyGold,
@@ -235,13 +265,18 @@ class _CashierMainViewState extends State<CashierMainView> {
 
                   // 1. LOCKED SYSTEM SCREEN (IF NOT CHECKED IN AT ALL)
                   if (!isCheckedIn) {
-                    return _buildLockedCheckInScreen(provider, textColor);
+                    return _buildLockedCheckInScreen(
+                      attendanceProvider,
+                      authProvider,
+                      textColor,
+                    );
                   }
 
                   // 2. ABSENCE RESTRICTION SCREEN (IF CHECKED IN BUT SICK / ON LEAVE)
                   if (isCheckedIn && !isActive) {
                     return _buildSickLeaveRestrictionScreen(
-                      provider,
+                      attendanceProvider,
+                      authProvider,
                       textColor,
                     );
                   }
@@ -306,7 +341,11 @@ class _CashierMainViewState extends State<CashierMainView> {
   }
 
   // Widget: Locked Check-In Panel
-  Widget _buildLockedCheckInScreen(AppStateProvider provider, Color textColor) {
+  Widget _buildLockedCheckInScreen(
+    AttendanceProvider attendanceProvider,
+    AuthProvider authProvider,
+    Color textColor,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -440,8 +479,9 @@ class _CashierMainViewState extends State<CashierMainView> {
 
                 PremiumButton(
                   text: 'Check-In Sekarang',
-                  isInitializing: provider.isInitializing,
-                  onPressed: () => _handleCheckIn(provider),
+                  isInitializing: attendanceProvider.isLoading,
+                  onPressed: () =>
+                      _handleCheckIn(attendanceProvider, authProvider),
                   icon: Icons.login_rounded,
                 ),
               ],
@@ -454,11 +494,13 @@ class _CashierMainViewState extends State<CashierMainView> {
 
   // Widget: Sick/Leave Access Restriction Panel
   Widget _buildSickLeaveRestrictionScreen(
-    AppStateProvider provider,
+    AttendanceProvider attendanceProvider,
+    AuthProvider authProvider,
     Color textColor,
   ) {
-    final lastLog = provider.attendanceLogs.firstWhere(
-      (l) => l.userId == provider.currentUser?.id,
+    final user = authProvider.currentUser;
+    final lastLog = attendanceProvider.attendanceLogs.firstWhere(
+      (l) => l.userId == user?.id,
       orElse: () => AttendanceModel(
         id: '',
         userId: '',
@@ -551,8 +593,8 @@ class _CashierMainViewState extends State<CashierMainView> {
           PremiumButton(
             text: 'Check-Out Shift & Batalkan',
             isSecondary: true,
-            isInitializing: provider.isInitializing,
-            onPressed: () => _handleCheckOut(provider),
+            isInitializing: attendanceProvider.isLoading,
+            onPressed: () => _handleCheckOut(attendanceProvider, authProvider),
             icon: Icons.cancel_outlined,
           ),
         ],
