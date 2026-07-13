@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/widgets.dart';
 
 class RegisterView extends StatefulWidget {
@@ -36,7 +37,7 @@ class _RegisterViewState extends State<RegisterView> {
   void _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = Provider.of<AppStateProvider>(context, listen: false);
+    final provider = Provider.of<AuthProvider>(context, listen: false);
     final success = await provider.register(
       email: _emailController.text,
       password: _passwordController.text,
@@ -268,11 +269,11 @@ class _RegisterViewState extends State<RegisterView> {
                             },
                           ),
                           const SizedBox(height: 28),
-                          Consumer<AppStateProvider>(
+                          Consumer<AuthProvider>(
                             builder: (context, state, _) {
                               return PremiumButton(
                                 text: 'Daftar Sekarang',
-                                isInitializing: state.isRegistering,
+                                isInitializing: state.isLoading,
                                 onPressed: _handleRegister,
                               );
                             },
