@@ -66,14 +66,25 @@ class _CashierMainViewState extends State<CashierMainView> {
     );
     if (mounted && success) {
       _reasonController.clear();
+      // Refresh profil agar lastCheckIn ter-update dan UI unlock
+      await authProvider.refreshCurrentUser();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              statusText == 'present'
+                  ? 'Check-In Berhasil! Akses sistem terbuka.'
+                  : 'Status absensi berhasil dicatat!',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } else if (mounted && !success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            statusText == 'present'
-                ? 'Check-In Berhasil! Akses sistem terbuka.'
-                : 'Status absensi berhasil dicatat!',
-          ),
-          backgroundColor: AppColors.success,
+          content: Text(attendanceProvider.errorMessage ?? 'Check-In Gagal'),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -130,12 +141,16 @@ class _CashierMainViewState extends State<CashierMainView> {
     if (confirm == true && mounted) {
       final success = await attendanceProvider.checkOut(userId: user.id);
       if (mounted && success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-Out Berhasil! Shift Anda telah diakhiri.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        // Refresh profil agar lastCheckOut ter-update
+        await authProvider.refreshCurrentUser();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Check-Out Berhasil! Shift Anda telah diakhiri.'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
       }
     }
   }
