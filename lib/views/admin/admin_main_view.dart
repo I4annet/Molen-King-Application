@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/widgets.dart';
 import '../auth/login_view.dart';
 import 'admin_dashboard_view.dart';
@@ -19,7 +19,7 @@ class _AdminMainViewState extends State<AdminMainView> {
   int _currentIndex = 0;
   bool _isDark = true;
 
-  void _handleLogout(AppStateProvider provider) async {
+  void _handleLogout(AuthProvider provider) async {
     await provider.logout();
     if (mounted) {
       Navigator.pushReplacement(
@@ -31,7 +31,7 @@ class _AdminMainViewState extends State<AdminMainView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final provider = Provider.of<AuthProvider>(context);
     final user = provider.currentUser;
     final isDark = _isDark;
     final textColor = isDark ? AppColors.textLight : AppColors.textDark;
@@ -125,7 +125,7 @@ class _AdminMainViewState extends State<AdminMainView> {
 
               // Subviews
               Expanded(
-                child: provider.isInitializing
+                child: provider.isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
                           color: AppColors.royalHoneyGold,
