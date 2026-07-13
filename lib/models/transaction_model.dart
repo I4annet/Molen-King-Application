@@ -18,11 +18,7 @@ class TransactionItem {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'flavor': flavor,
-      'quantity': quantity,
-      'price': price,
-    };
+    return {'flavor': flavor, 'quantity': quantity, 'price': price};
   }
 }
 
@@ -43,7 +39,10 @@ class TransactionModel {
     required this.items,
   });
 
-  factory TransactionModel.fromJson(Map<String, dynamic> json, [List<dynamic>? itemsJson]) {
+  factory TransactionModel.fromJson(
+    Map<String, dynamic> json, [
+    List<dynamic>? itemsJson,
+  ]) {
     final List<TransactionItem> parsedItems = [];
     if (itemsJson != null) {
       for (var item in itemsJson) {

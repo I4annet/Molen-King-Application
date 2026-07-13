@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:molen_king_application/providers/stock_provider.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
 import '../shared/widgets.dart';
 
 class CashierStockView extends StatefulWidget {
@@ -24,13 +25,22 @@ class _CashierStockViewState extends State<CashierStockView> {
     super.dispose();
   }
 
-  void _adjustStock(AppStateProvider provider, String flavor, int amount) async {
-    final success = await provider.updateStock(flavor, amount);
+  void _adjustStock(
+    StockProvider provider,
+    String flavor,
+    int amountChange,
+  ) async {
+    final success = await provider.updateStock(
+      flavor: flavor,
+      amountChange: amountChange,
+    );
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Stok ${flavor.toUpperCase()} berhasil diperbarui (${amount > 0 ? "+" : ""}$amount)'),
+            content: Text(
+              'Stok ${flavor.toUpperCase()} berhasil diperbarui (${amountChange > 0 ? "+" : ""}$amountChange)',
+            ),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 1),
           ),
@@ -46,12 +56,14 @@ class _CashierStockViewState extends State<CashierStockView> {
     }
   }
 
-  void _resetStock(AppStateProvider provider, String flavor) async {
+  void _resetStock(StockProvider provider, String flavor) async {
     // Show confirmation dialog first
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+        backgroundColor: widget.isDark
+            ? AppColors.cardDark
+            : AppColors.cardLight,
         title: Text(
           'Hapus Stok?',
           style: TextStyle(
@@ -62,7 +74,8 @@ class _CashierStockViewState extends State<CashierStockView> {
         content: Text(
           'Apakah Anda yakin ingin menghapus (reset menjadi 0) semua stok Rasa ${flavor.toUpperCase()}?',
           style: TextStyle(
-            color: (widget.isDark ? AppColors.textLight : AppColors.textDark).withOpacity(0.8),
+            color: (widget.isDark ? AppColors.textLight : AppColors.textDark)
+                .withOpacity(0.8),
           ),
         ),
         actions: [
@@ -73,7 +86,10 @@ class _CashierStockViewState extends State<CashierStockView> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus Stok', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Hapus Stok',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -85,7 +101,9 @@ class _CashierStockViewState extends State<CashierStockView> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Stok ${flavor.toUpperCase()} telah di-reset menjadi 0'),
+              content: Text(
+                'Stok ${flavor.toUpperCase()} telah di-reset menjadi 0',
+              ),
               backgroundColor: AppColors.success,
             ),
           );
@@ -94,7 +112,11 @@ class _CashierStockViewState extends State<CashierStockView> {
     }
   }
 
-  void _handleManualInput(AppStateProvider provider, String flavor, bool isAdd) async {
+  void _handleManualInput(
+    StockProvider provider,
+    String flavor,
+    bool isAdd,
+  ) async {
     final text = _controllers[flavor]!.text;
     if (text.isEmpty) return;
 
@@ -117,7 +139,7 @@ class _CashierStockViewState extends State<CashierStockView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final provider = Provider.of<StockProvider>(context);
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     final List<Map<String, dynamic>> itemsList = [
@@ -125,19 +147,19 @@ class _CashierStockViewState extends State<CashierStockView> {
         'flavor': 'keju',
         'name': 'Molen Rasa Keju',
         'color': const Color(0xFFF1C40F),
-        'icon': Icons.restaurant
+        'icon': Icons.restaurant,
       },
       {
         'flavor': 'ori',
         'name': 'Molen Rasa Ori',
         'color': const Color(0xFFE67E22),
-        'icon': Icons.breakfast_dining
+        'icon': Icons.breakfast_dining,
       },
       {
         'flavor': 'coklat',
         'name': 'Molen Rasa Coklat',
         'color': const Color(0xFF795548),
-        'icon': Icons.cookie
+        'icon': Icons.cookie,
       },
     ];
 
@@ -183,7 +205,8 @@ class _CashierStockViewState extends State<CashierStockView> {
                           Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor: (item['color'] as Color).withOpacity(0.2),
+                                backgroundColor: (item['color'] as Color)
+                                    .withOpacity(0.2),
                                 radius: 18,
                                 child: Icon(
                                   item['icon'] as IconData,
@@ -204,18 +227,25 @@ class _CashierStockViewState extends State<CashierStockView> {
                           ),
                           // Stock Indicator Badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: (item['color'] as Color).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: (item['color'] as Color).withOpacity(0.4),
+                                color: (item['color'] as Color).withOpacity(
+                                  0.4,
+                                ),
                               ),
                             ),
                             child: Text(
                               'Stok: $qty pcs',
                               style: TextStyle(
-                                color: widget.isDark ? AppColors.softButterCream : AppColors.goldenCaramel,
+                                color: widget.isDark
+                                    ? AppColors.softButterCream
+                                    : AppColors.goldenCaramel,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -235,7 +265,8 @@ class _CashierStockViewState extends State<CashierStockView> {
                                 side: const BorderSide(color: AppColors.error),
                                 foregroundColor: AppColors.error,
                               ),
-                              onPressed: () => _adjustStock(provider, flavor, -10),
+                              onPressed: () =>
+                                  _adjustStock(provider, flavor, -10),
                               child: const Text('-10'),
                             ),
                           ),
@@ -246,7 +277,8 @@ class _CashierStockViewState extends State<CashierStockView> {
                                 side: const BorderSide(color: AppColors.error),
                                 foregroundColor: AppColors.error,
                               ),
-                              onPressed: () => _adjustStock(provider, flavor, -5),
+                              onPressed: () =>
+                                  _adjustStock(provider, flavor, -5),
                               child: const Text('-5'),
                             ),
                           ),
@@ -254,10 +286,13 @@ class _CashierStockViewState extends State<CashierStockView> {
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.royalHoneyGold),
+                                side: const BorderSide(
+                                  color: AppColors.royalHoneyGold,
+                                ),
                                 foregroundColor: AppColors.royalHoneyGold,
                               ),
-                              onPressed: () => _adjustStock(provider, flavor, 5),
+                              onPressed: () =>
+                                  _adjustStock(provider, flavor, 5),
                               child: const Text('+5'),
                             ),
                           ),
@@ -265,10 +300,13 @@ class _CashierStockViewState extends State<CashierStockView> {
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.royalHoneyGold),
+                                side: const BorderSide(
+                                  color: AppColors.royalHoneyGold,
+                                ),
                                 foregroundColor: AppColors.royalHoneyGold,
                               ),
-                              onPressed: () => _adjustStock(provider, flavor, 10),
+                              onPressed: () =>
+                                  _adjustStock(provider, flavor, 10),
                               child: const Text('+10'),
                             ),
                           ),
@@ -294,14 +332,16 @@ class _CashierStockViewState extends State<CashierStockView> {
                             icon: const Icon(Icons.add_box),
                             color: AppColors.royalHoneyGold,
                             iconSize: 42,
-                            onPressed: () => _handleManualInput(provider, flavor, true),
+                            onPressed: () =>
+                                _handleManualInput(provider, flavor, true),
                             tooltip: 'Tambah manual',
                           ),
                           IconButton(
                             icon: const Icon(Icons.indeterminate_check_box),
                             color: AppColors.goldenCaramel,
                             iconSize: 42,
-                            onPressed: () => _handleManualInput(provider, flavor, false),
+                            onPressed: () =>
+                                _handleManualInput(provider, flavor, false),
                             tooltip: 'Kurang manual',
                           ),
                           IconButton(

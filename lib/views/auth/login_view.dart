@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/widgets.dart';
 import 'register_view.dart';
 import '../cashier/cashier_main_view.dart';
@@ -30,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
   void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = Provider.of<AppStateProvider>(context, listen: false);
+    final provider = Provider.of<AuthProvider>(context, listen: false);
     final success = await provider.login(
       _emailController.text,
       _passwordController.text,
@@ -83,7 +84,7 @@ class _LoginViewState extends State<LoginView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Consumer<AppStateProvider>(
+                        Consumer<AuthProvider>(
                           builder: (context, state, _) {
                             return Container(
                               padding: const EdgeInsets.symmetric(
@@ -91,12 +92,12 @@ class _LoginViewState extends State<LoginView> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: state.isSimulationMode
+                                color: state.isLoading
                                     ? AppColors.goldenCaramel.withOpacity(0.2)
                                     : AppColors.success.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: state.isSimulationMode
+                                  color: state.isLoading
                                       ? AppColors.goldenCaramel
                                       : AppColors.success,
                                   width: 1,
@@ -106,13 +107,13 @@ class _LoginViewState extends State<LoginView> {
                                 children: [
                                   CircleAvatar(
                                     radius: 4,
-                                    backgroundColor: state.isSimulationMode
+                                    backgroundColor: state.isLoading
                                         ? AppColors.goldenCaramel
                                         : AppColors.success,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    state.isSimulationMode
+                                    state.isLoading
                                         ? 'Mode Simulasi (Lokal)'
                                         : 'Online (Supabase)',
                                     style: TextStyle(
@@ -184,7 +185,9 @@ class _LoginViewState extends State<LoginView> {
                           shadows: [
                             Shadow(
                               blurRadius: 10.0,
-                              color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+                              color: Colors.black.withOpacity(
+                                isDark ? 0.5 : 0.1,
+                              ),
                               offset: const Offset(0, 3),
                             ),
                           ],
@@ -230,13 +233,15 @@ class _LoginViewState extends State<LoginView> {
                           PremiumTextField(
                             controller: _emailController,
                             labelText: 'Alamat Email',
-                            hintText: 'email@domain.com',
+                            hintText: 'Masukkan email Anda',
                             prefixIcon: Icons.email_outlined,
                             isDark: isDark,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Email wajib diisi';
-                              if (!v.contains('@')) return 'Format email tidak valid';
+                              if (v == null || v.isEmpty)
+                                return 'Email wajib diisi';
+                              if (!v.contains('@'))
+                                return 'Format email tidak valid';
                               return null;
                             },
                           ),
@@ -244,7 +249,7 @@ class _LoginViewState extends State<LoginView> {
                           PremiumTextField(
                             controller: _passwordController,
                             labelText: 'Kata Sandi',
-                            hintText: '••••••••',
+                            hintText: 'Masukkan kata sandi',
                             prefixIcon: Icons.lock_outline,
                             isPassword: _obscurePassword,
                             isDark: isDark,
@@ -264,17 +269,19 @@ class _LoginViewState extends State<LoginView> {
                               },
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Sandi wajib diisi';
-                              if (v.length < 6) return 'Sandi minimal 6 karakter';
+                              if (v == null || v.isEmpty)
+                                return 'Sandi wajib diisi';
+                              if (v.length < 6)
+                                return 'Sandi minimal 6 karakter';
                               return null;
                             },
                           ),
                           const SizedBox(height: 24),
-                          Consumer<AppStateProvider>(
+                          Consumer<AuthProvider>(
                             builder: (context, state, _) {
                               return PremiumButton(
                                 text: 'Masuk Sekarang',
-                                isLoading: state.isLoading,
+                                isInitializing: state.isLoading,
                                 onPressed: _handleLogin,
                               );
                             },
@@ -320,16 +327,18 @@ class _LoginViewState extends State<LoginView> {
                     const SizedBox(height: 30),
 
                     // Test credentials note for ease of use
-                    Consumer<AppStateProvider>(
+                    Consumer<AuthProvider>(
                       builder: (context, state, _) {
-                        if (state.isSimulationMode) {
+                        if (state.isLoading) {
                           return Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: AppColors.royalHoneyGold.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: AppColors.royalHoneyGold.withOpacity(0.2),
+                                color: AppColors.royalHoneyGold.withOpacity(
+                                  0.2,
+                                ),
                               ),
                             ),
                             child: Column(

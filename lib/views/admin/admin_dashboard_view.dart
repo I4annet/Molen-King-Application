@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/transaction_provider.dart';
+// import '../../providers/expense_provider.dart';
+// import '../../providers/stock_provider.dart';
+import '../../providers/report_provider.dart';
 import '../shared/widgets.dart';
 
 class AdminDashboardView extends StatefulWidget {
@@ -15,20 +18,27 @@ class AdminDashboardView extends StatefulWidget {
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
   String _selectedPeriod = 'weekly'; // 'daily', 'weekly', 'monthly', 'yearly'
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
-    final stats = provider.getStatsForPeriod(_selectedPeriod);
-    final chartData = provider.getChartDataForPeriod(_selectedPeriod);
+    // final transactionProvider = context.watch<TransactionProvider>();
+    // final expenseProvider = context.watch<ExpenseProvider>();
+    // final stockProvider = context.watch<StockProvider>();
+    final reportProvider = context.watch<ReportProvider>();
+    final stats = reportProvider.getStatsForPeriod(_selectedPeriod);
+    final chartData = reportProvider.getChartDataForPeriod(_selectedPeriod);
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     // Calculate real-time sold counts by flavor
-    final soldKeju = provider.getMolenSoldQuantity('keju');
-    final soldOri = provider.getMolenSoldQuantity('ori');
-    final soldCoklat = provider.getMolenSoldQuantity('coklat');
-    final totalSold = provider.getTotalMolenSold();
+    final soldKeju = reportProvider.getMolenSoldQuantity('keju');
+    final soldOri = reportProvider.getMolenSoldQuantity('ori');
+    final soldCoklat = reportProvider.getMolenSoldQuantity('coklat');
+    final totalSold = reportProvider.getTotalMolenSold();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -53,31 +63,56 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   const SizedBox(height: 4),
                   Text(
                     'Ringkasan data transaksi real-time.',
-                    style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: textColor.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
-              
+
               // Period Selector Dropdown
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
-                  color: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+                  color: widget.isDark
+                      ? AppColors.cardDark
+                      : AppColors.cardLight,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: widget.isDark ? AppColors.royalHoneyGold.withOpacity(0.3) : AppColors.sageMint,
+                    color: widget.isDark
+                        ? AppColors.royalHoneyGold.withOpacity(0.3)
+                        : AppColors.sageMint,
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedPeriod,
-                    dropdownColor: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
-                    style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    dropdownColor: widget.isDark
+                        ? AppColors.cardDark
+                        : AppColors.cardLight,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                     items: const [
                       DropdownMenuItem(value: 'daily', child: Text('Hari Ini')),
-                      DropdownMenuItem(value: 'weekly', child: Text('Minggu Ini')),
-                      DropdownMenuItem(value: 'monthly', child: Text('Bulan Ini')),
-                      DropdownMenuItem(value: 'yearly', child: Text('Tahun Ini')),
+                      DropdownMenuItem(
+                        value: 'weekly',
+                        child: Text('Minggu Ini'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'monthly',
+                        child: Text('Bulan Ini'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'yearly',
+                        child: Text('Tahun Ini'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -111,13 +146,29 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildFlavorSoldStat('Keju', soldKeju, const Color(0xFFF1C40F)),
-                    _buildFlavorSoldStat('Ori', soldOri, const Color(0xFFE67E22)),
-                    _buildFlavorSoldStat('Coklat', soldCoklat, const Color(0xFF795548)),
+                    _buildFlavorSoldStat(
+                      'Keju',
+                      soldKeju,
+                      const Color(0xFFF1C40F),
+                    ),
+                    _buildFlavorSoldStat(
+                      'Ori',
+                      soldOri,
+                      const Color(0xFFE67E22),
+                    ),
+                    _buildFlavorSoldStat(
+                      'Coklat',
+                      soldCoklat,
+                      const Color(0xFF795548),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Divider(color: AppColors.sageMint, thickness: 0.5, height: 1),
+                const Divider(
+                  color: AppColors.sageMint,
+                  thickness: 0.5,
+                  height: 1,
+                ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,7 +186,9 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: widget.isDark ? AppColors.softButterCream : AppColors.goldenCaramel,
+                        color: widget.isDark
+                            ? AppColors.softButterCream
+                            : AppColors.goldenCaramel,
                       ),
                     ),
                   ],
@@ -203,15 +256,23 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         show: true,
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: widget.isDark ? Colors.white10 : Colors.black12,
+                          color: widget.isDark
+                              ? Colors.white10
+                              : Colors.black12,
                           strokeWidth: 1,
                         ),
                       ),
                       titlesData: FlTitlesData(
                         show: true,
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -241,11 +302,17 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                       lineBarsData: [
                         LineChartBarData(
                           spots: chartData.asMap().entries.map((entry) {
-                            return FlSpot(entry.key.toDouble(), entry.value.value);
+                            return FlSpot(
+                              entry.key.toDouble(),
+                              entry.value.value,
+                            );
                           }).toList(),
                           isCurved: true,
                           gradient: const LinearGradient(
-                            colors: [AppColors.royalHoneyGold, AppColors.goldenCaramel],
+                            colors: [
+                              AppColors.royalHoneyGold,
+                              AppColors.goldenCaramel,
+                            ],
                           ),
                           barWidth: 4,
                           isStrokeCapRound: true,
@@ -286,8 +353,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             name == 'Keju'
                 ? Icons.restaurant
                 : name == 'Ori'
-                    ? Icons.breakfast_dining
-                    : Icons.cookie,
+                ? Icons.breakfast_dining
+                : Icons.cookie,
             color: color,
             size: 24,
           ),
@@ -298,7 +365,9 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: widget.isDark ? AppColors.textLight.withOpacity(0.7) : AppColors.textDark.withOpacity(0.7),
+            color: widget.isDark
+                ? AppColors.textLight.withOpacity(0.7)
+                : AppColors.textDark.withOpacity(0.7),
           ),
         ),
         const SizedBox(height: 2),
@@ -315,7 +384,13 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   // Helper Widget: Metric Card
-  Widget _buildMetricCard(String label, String value, IconData icon, Color color, {bool isFullWidth = false}) {
+  Widget _buildMetricCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color, {
+    bool isFullWidth = false,
+  }) {
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     return PremiumCard(

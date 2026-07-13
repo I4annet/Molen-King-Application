@@ -14,7 +14,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.phone,
-    required this.origin,
+    required this.origin, // asal kota
     required this.role,
     this.isActive = false,
     this.lastCheckIn,
@@ -30,8 +30,12 @@ class UserModel {
       origin: json['origin'] as String? ?? '',
       role: json['role'] as String? ?? 'cashier',
       isActive: json['is_active'] as bool? ?? false,
-      lastCheckIn: json['last_check_in'] != null ? DateTime.parse(json['last_check_in']) : null,
-      lastCheckOut: json['last_check_out'] != null ? DateTime.parse(json['last_check_out']) : null,
+      lastCheckIn: json['last_check_in'] != null
+          ? DateTime.parse(json['last_check_in'])
+          : null,
+      lastCheckOut: json['last_check_out'] != null
+          ? DateTime.parse(json['last_check_out'])
+          : null,
     );
   }
 

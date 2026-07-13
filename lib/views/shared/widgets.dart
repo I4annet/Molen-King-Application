@@ -53,20 +53,22 @@ class PremiumCard extends StatelessWidget {
             ? AppColors.cardDark.withOpacity(0.85)
             : AppColors.cardLight.withOpacity(0.9),
         borderRadius: BorderRadius.circular(16),
-        border: border ??
+        border:
+            border ??
             Border.all(
               color: isDark
                   ? AppColors.royalHoneyGold.withOpacity(0.15)
                   : AppColors.sageMint.withOpacity(0.4),
               width: 1.5,
             ),
-        boxShadow: shadow ??
+        boxShadow:
+            shadow ??
             [
               BoxShadow(
                 color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
       ),
       child: child,
@@ -149,17 +151,11 @@ class PremiumTextField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.error,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.error,
-            width: 2.0,
-          ),
+          borderSide: const BorderSide(color: AppColors.error, width: 2.0),
         ),
       ),
     );
@@ -171,7 +167,7 @@ class PremiumButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isSecondary;
-  final bool isLoading;
+  final bool isInitializing;
   final IconData? icon;
 
   const PremiumButton({
@@ -179,7 +175,7 @@ class PremiumButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.isSecondary = false,
-    this.isLoading = false,
+    this.isInitializing = false,
     this.icon,
   });
 
@@ -204,20 +200,23 @@ class PremiumButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: (isSecondary ? AppColors.goldenCaramel : AppColors.royalHoneyGold)
-                .withOpacity(0.3),
+            color:
+                (isSecondary
+                        ? AppColors.goldenCaramel
+                        : AppColors.royalHoneyGold)
+                    .withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isLoading ? null : onPressed,
+          onTap: isInitializing ? null : onPressed,
           borderRadius: BorderRadius.circular(12),
           child: Center(
-            child: isLoading
+            child: isInitializing
                 ? const SizedBox(
                     width: 24,
                     height: 24,
@@ -256,11 +255,7 @@ class ArtisanBackground extends StatelessWidget {
   final Widget child;
   final bool isDark;
 
-  const ArtisanBackground({
-    super.key,
-    required this.child,
-    this.isDark = true,
-  });
+  const ArtisanBackground({super.key, required this.child, this.isDark = true});
 
   @override
   Widget build(BuildContext context) {
@@ -269,18 +264,12 @@ class ArtisanBackground extends StatelessWidget {
         color: isDark ? AppColors.espressoDark : AppColors.ivoryCream,
         gradient: isDark
             ? const LinearGradient(
-                colors: [
-                  AppColors.espressoDark,
-                  Color(0xFF1E1814),
-                ],
+                colors: [AppColors.espressoDark, Color(0xFF1E1814)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               )
             : const LinearGradient(
-                colors: [
-                  AppColors.ivoryCream,
-                  Color(0xFFEFE8DA),
-                ],
+                colors: [AppColors.ivoryCream, Color(0xFFEFE8DA)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),

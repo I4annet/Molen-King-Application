@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../shared/widgets.dart';
 import '../auth/login_view.dart';
 import 'admin_dashboard_view.dart';
@@ -19,7 +19,7 @@ class _AdminMainViewState extends State<AdminMainView> {
   int _currentIndex = 0;
   bool _isDark = true;
 
-  void _handleLogout(AppStateProvider provider) async {
+  void _handleLogout(AuthProvider provider) async {
     await provider.logout();
     if (mounted) {
       Navigator.pushReplacement(
@@ -31,7 +31,7 @@ class _AdminMainViewState extends State<AdminMainView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final provider = Provider.of<AuthProvider>(context);
     final user = provider.currentUser;
     final isDark = _isDark;
     final textColor = isDark ? AppColors.textLight : AppColors.textDark;
@@ -58,10 +58,15 @@ class _AdminMainViewState extends State<AdminMainView> {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.goldenCaramel, width: 1.5),
+                        border: Border.all(
+                          color: AppColors.goldenCaramel,
+                          width: 1.5,
+                        ),
                       ),
                       child: CircleAvatar(
-                        backgroundColor: AppColors.goldenCaramel.withOpacity(0.1),
+                        backgroundColor: AppColors.goldenCaramel.withOpacity(
+                          0.1,
+                        ),
                         radius: 22,
                         child: const Icon(
                           Icons.admin_panel_settings,
@@ -97,7 +102,9 @@ class _AdminMainViewState extends State<AdminMainView> {
                     IconButton(
                       icon: Icon(
                         isDark ? Icons.light_mode : Icons.dark_mode,
-                        color: isDark ? AppColors.royalHoneyGold : AppColors.goldenCaramel,
+                        color: isDark
+                            ? AppColors.royalHoneyGold
+                            : AppColors.goldenCaramel,
                       ),
                       onPressed: () => setState(() => _isDark = !_isDark),
                     ),
@@ -110,13 +117,19 @@ class _AdminMainViewState extends State<AdminMainView> {
                 ),
               ),
 
-              const Divider(color: AppColors.sageMint, height: 1, thickness: 0.5),
+              const Divider(
+                color: AppColors.sageMint,
+                height: 1,
+                thickness: 0.5,
+              ),
 
               // Subviews
               Expanded(
                 child: provider.isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(color: AppColors.royalHoneyGold),
+                        child: CircularProgressIndicator(
+                          color: AppColors.royalHoneyGold,
+                        ),
                       )
                     : tabs[_currentIndex],
               ),
@@ -128,19 +141,29 @@ class _AdminMainViewState extends State<AdminMainView> {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: isDark ? AppColors.royalHoneyGold.withOpacity(0.1) : AppColors.sageMint,
+              color: isDark
+                  ? AppColors.royalHoneyGold.withOpacity(0.1)
+                  : AppColors.sageMint,
             ),
           ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: isDark ? AppColors.espressoDark : AppColors.ivoryCream,
+          backgroundColor: isDark
+              ? AppColors.espressoDark
+              : AppColors.ivoryCream,
           selectedItemColor: AppColors.royalHoneyGold,
           unselectedItemColor: textColor.withOpacity(0.4),
           showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 10,
+          ),
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(

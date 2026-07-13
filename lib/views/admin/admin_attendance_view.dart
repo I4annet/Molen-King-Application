@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/attendance_provider.dart';
 import '../../models/user_model.dart';
 import '../../models/attendance_model.dart';
 import '../shared/widgets.dart';
@@ -14,7 +16,8 @@ class AdminAttendanceView extends StatefulWidget {
   State<AdminAttendanceView> createState() => _AdminAttendanceViewState();
 }
 
-class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTickerProviderStateMixin {
+class _AdminAttendanceViewState extends State<AdminAttendanceView>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final dateFormatter = DateFormat('dd/MM/yyyy');
   final timeFormatter = DateFormat('HH:mm');
@@ -33,17 +36,15 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
 
   // Attendance report calculator
   Map<String, Map<String, int>> _calculateAttendanceSummary(
-      List<AttendanceModel> logs, List<UserModel> cashiers, bool isWeekly) {
+    List<AttendanceModel> logs,
+    List<UserModel> cashiers,
+    bool isWeekly,
+  ) {
     final Map<String, Map<String, int>> summaries = {};
-    
+
     // Initialize
     for (var c in cashiers) {
-      summaries[c.id] = {
-        'present': 0,
-        'sick': 0,
-        'leave': 0,
-        'total': 0,
-      };
+      summaries[c.id] = {'present': 0, 'sick': 0, 'leave': 0, 'total': 0};
     }
 
     final now = DateTime.now();
@@ -56,7 +57,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
       startRange = now.subtract(const Duration(days: 30));
     }
 
-    final periodLogs = logs.where((l) => l.checkInTime.isAfter(startRange)).toList();
+    final periodLogs = logs
+        .where((l) => l.checkInTime.isAfter(startRange))
+        .toList();
 
     for (var log in periodLogs) {
       if (summaries.containsKey(log.userId)) {
@@ -77,14 +80,25 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final authProvider = context.watch<AuthProvider>();
+    final attendanceProvider = context.watch<AttendanceProvider>();
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
-    
-    final cashiers = provider.users.where((u) => u.role == 'cashier').toList();
+
+    final cashiers = authProvider.users
+        .where((u) => u.role == 'cashier')
+        .toList();
     final activeCashiers = cashiers.where((u) => u.isActive).toList();
 
-    final weeklySummaries = _calculateAttendanceSummary(provider.attendanceLogs, cashiers, true);
-    final monthlySummaries = _calculateAttendanceSummary(provider.attendanceLogs, cashiers, false);
+    final weeklySummaries = _calculateAttendanceSummary(
+      attendanceProvider.attendanceLogs,
+      cashiers,
+      true,
+    );
+    final monthlySummaries = _calculateAttendanceSummary(
+      attendanceProvider.attendanceLogs,
+      cashiers,
+      false,
+    );
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -118,7 +132,11 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
                     shape: BoxShape.circle,
                     color: AppColors.success.withOpacity(0.15),
                   ),
-                  child: const Icon(Icons.store, color: AppColors.success, size: 24),
+                  child: const Icon(
+                    Icons.store,
+                    color: AppColors.success,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -141,14 +159,19 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: activeCashiers.isEmpty ? textColor.withOpacity(0.8) : AppColors.success,
+                          color: activeCashiers.isEmpty
+                              ? textColor.withOpacity(0.8)
+                              : AppColors.success,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -173,7 +196,10 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
             labelColor: AppColors.royalHoneyGold,
             unselectedLabelColor: textColor.withOpacity(0.5),
             indicatorColor: AppColors.royalHoneyGold,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
             tabs: const [
               Tab(text: 'Daftar Karyawan'),
               Tab(text: 'Laporan Kehadiran'),
@@ -209,13 +235,16 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
                                       : textColor.withOpacity(0.1),
                                   child: Icon(
                                     Icons.person,
-                                    color: c.isActive ? AppColors.success : textColor.withOpacity(0.6),
+                                    color: c.isActive
+                                        ? AppColors.success
+                                        : textColor.withOpacity(0.6),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         c.name,
@@ -237,21 +266,28 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: c.isActive
                                         ? AppColors.success.withOpacity(0.15)
                                         : Colors.grey.withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: c.isActive ? AppColors.success : Colors.grey,
+                                      color: c.isActive
+                                          ? AppColors.success
+                                          : Colors.grey,
                                       width: 1,
                                     ),
                                   ),
                                   child: Text(
                                     c.isActive ? 'Aktif' : 'Off Shift',
                                     style: TextStyle(
-                                      color: c.isActive ? AppColors.success : Colors.grey,
+                                      color: c.isActive
+                                          ? AppColors.success
+                                          : Colors.grey,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 10,
                                     ),
@@ -269,17 +305,23 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Weekly Report Section
-                      _buildReportSectionTitle('Laporan Kehadiran Mingguan (7 Hari Terakhir)', textColor),
+                      _buildReportSectionTitle(
+                        'Laporan Kehadiran Mingguan (7 Hari Terakhir)',
+                        textColor,
+                      ),
                       const SizedBox(height: 10),
                       _buildReportList(cashiers, weeklySummaries),
 
                       const SizedBox(height: 24),
 
                       // Monthly Report Section
-                      _buildReportSectionTitle('Laporan Kehadiran Bulanan (30 Hari Terakhir)', textColor),
+                      _buildReportSectionTitle(
+                        'Laporan Kehadiran Bulanan (30 Hari Terakhir)',
+                        textColor,
+                      ),
                       const SizedBox(height: 10),
                       _buildReportList(cashiers, monthlySummaries),
-                      
+
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -307,24 +349,29 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
     );
   }
 
-  Widget _buildReportList(List<UserModel> cashiers, Map<String, Map<String, int>> summaries) {
+  Widget _buildReportList(
+    List<UserModel> cashiers,
+    Map<String, Map<String, int>> summaries,
+  ) {
     if (cashiers.isEmpty) {
       return const PremiumCard(
         isDark: true,
-        child: Center(
-          child: Text('Belum ada data absensi.'),
-        ),
+        child: Center(child: Text('Belum ada data absensi.')),
       );
     }
 
     return Column(
       children: cashiers.map((c) {
-        final sum = summaries[c.id] ?? {'present': 0, 'sick': 0, 'leave': 0, 'total': 0};
+        final sum =
+            summaries[c.id] ??
+            {'present': 0, 'sick': 0, 'leave': 0, 'total': 0};
         final present = sum['present'] ?? 0;
         final sick = sum['sick'] ?? 0;
         final leave = sum['leave'] ?? 0;
-        
-        final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
+
+        final textColor = widget.isDark
+            ? AppColors.textLight
+            : AppColors.textDark;
 
         return PremiumCard(
           isDark: widget.isDark,
@@ -372,7 +419,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView> with SingleTi
             '$label: ',
             style: TextStyle(
               fontSize: 10,
-              color: widget.isDark ? AppColors.textLight.withOpacity(0.8) : AppColors.textDark.withOpacity(0.8),
+              color: widget.isDark
+                  ? AppColors.textLight.withOpacity(0.8)
+                  : AppColors.textDark.withOpacity(0.8),
               fontWeight: FontWeight.w500,
             ),
           ),

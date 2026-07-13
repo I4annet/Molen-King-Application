@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:molen_king_application/providers/stock_provider.dart';
+import 'package:molen_king_application/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
+// import '../../providers/app_state_provider.dart';
 import '../../models/transaction_model.dart';
 import '../shared/widgets.dart';
 
@@ -15,7 +18,11 @@ class CashierTransactionView extends StatefulWidget {
 
 class _CashierTransactionViewState extends State<CashierTransactionView> {
   final Map<String, int> _cart = {'keju': 0, 'ori': 0, 'coklat': 0};
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   void _increment(String flavor, int maxQty) {
     if ((_cart[flavor] ?? 0) < maxQty) {
@@ -41,7 +48,7 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
     }
   }
 
-  double _calculateTotal(AppStateProvider provider) {
+  double _calculateTotal(StockProvider provider) {
     double total = 0;
     _cart.forEach((flavor, qty) {
       total += (provider.molenPrices[flavor] ?? 0.0) * qty;
@@ -53,21 +60,31 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
     return _cart.values.every((qty) => qty == 0);
   }
 
-  void _checkout(AppStateProvider provider) async {
+  void _checkout(
+    TransactionProvider transactionProvider,
+    StockProvider stockProvider,
+    AuthProvider authProvider,
+  ) async {
     if (_isCartEmpty()) return;
 
     final List<TransactionItem> items = [];
     _cart.forEach((flavor, qty) {
       if (qty > 0) {
-        items.add(TransactionItem(
-          flavor: flavor,
-          quantity: qty,
-          price: provider.molenPrices[flavor] ?? 0.0,
-        ));
+        items.add(
+          TransactionItem(
+            flavor: flavor,
+            quantity: qty,
+            price: stockProvider.molenPrices[flavor] ?? 0.0,
+          ),
+        );
       }
     });
 
-    final success = await provider.createTransaction(items);
+    final success = await transactionProvider.createTransaction(
+      cashierId: authProvider.currentUser!.id,
+      cashierName: authProvider.currentUser!.name,
+      items: items,
+    );
 
     if (mounted) {
       if (success) {
@@ -83,7 +100,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Transaksi Gagal'),
+            content: Text(
+              transactionProvider.errorMessage ?? 'Transaksi Gagal',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -93,28 +112,32 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final stockProvider = Provider.of<StockProvider>(context);
+
+    final transactionProvider = Provider.of<TransactionProvider>(context);
+
+    final authProvider = Provider.of<AuthProvider>(context);
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
-    final total = _calculateTotal(provider);
+    final total = _calculateTotal(stockProvider);
 
     final List<Map<String, dynamic>> itemsList = [
       {
         'flavor': 'keju',
         'name': 'Molen Rasa Keju',
         'icon': Icons.restaurant,
-        'image_color': const Color(0xFFF1C40F)
+        'image_color': const Color(0xFFF1C40F),
       },
       {
         'flavor': 'ori',
         'name': 'Molen Rasa Ori (Original)',
         'icon': Icons.breakfast_dining,
-        'image_color': const Color(0xFFE67E22)
+        'image_color': const Color(0xFFE67E22),
       },
       {
         'flavor': 'coklat',
         'name': 'Molen Rasa Coklat',
         'icon': Icons.cookie,
-        'image_color': const Color(0xFF795548)
+        'image_color': const Color(0xFF795548),
       },
     ];
 
@@ -144,8 +167,8 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
               itemBuilder: (context, index) {
                 final item = itemsList[index];
                 final flavor = item['flavor'] as String;
-                final price = provider.molenPrices[flavor] ?? 0.0;
-                final stock = provider.stocks[flavor] ?? 0;
+                final price = stockProvider.molenPrices[flavor] ?? 0.0;
+                final stock = stockProvider.stocks[flavor] ?? 0;
                 final cartQty = _cart[flavor] ?? 0;
 
                 return PremiumCard(
@@ -157,7 +180,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                         height: 60,
                         width: 60,
                         decoration: BoxDecoration(
-                          color: (item['image_color'] as Color).withOpacity(0.15),
+                          color: (item['image_color'] as Color).withOpacity(
+                            0.15,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: item['image_color'] as Color,
@@ -196,7 +221,10 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                             ),
                             const SizedBox(height: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: stock > 10
                                     ? AppColors.sageMint.withOpacity(0.1)
@@ -208,7 +236,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: stock > 10
-                                      ? (widget.isDark ? AppColors.sageMint : AppColors.goldenCaramel)
+                                      ? (widget.isDark
+                                            ? AppColors.sageMint
+                                            : AppColors.goldenCaramel)
                                       : AppColors.error,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -223,7 +253,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline),
-                            color: cartQty > 0 ? AppColors.goldenCaramel : textColor.withOpacity(0.3),
+                            color: cartQty > 0
+                                ? AppColors.goldenCaramel
+                                : textColor.withOpacity(0.3),
                             onPressed: () => _decrement(flavor),
                           ),
                           Text(
@@ -236,7 +268,9 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            color: stock > 0 ? AppColors.royalHoneyGold : textColor.withOpacity(0.3),
+                            color: stock > 0
+                                ? AppColors.royalHoneyGold
+                                : textColor.withOpacity(0.3),
                             onPressed: () => _increment(flavor, stock),
                           ),
                         ],
@@ -280,8 +314,14 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                 const SizedBox(height: 16),
                 PremiumButton(
                   text: 'Selesaikan Transaksi',
-                  isLoading: provider.isLoading,
-                  onPressed: _isCartEmpty() ? () {} : () => _checkout(provider),
+                  isInitializing: transactionProvider.isLoading,
+                  onPressed: _isCartEmpty()
+                      ? () {}
+                      : () => _checkout(
+                          transactionProvider,
+                          stockProvider,
+                          authProvider,
+                        ),
                   icon: Icons.shopping_cart_checkout,
                 ),
               ],

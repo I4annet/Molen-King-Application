@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../providers/app_state_provider.dart';
+// import '../../providers/app_state_provider.dart';
+import '../../providers/report_provider.dart';
 import '../../models/transaction_model.dart';
 import '../../models/expense_model.dart';
 import '../shared/widgets.dart';
@@ -14,10 +15,16 @@ class AdminReportsView extends StatefulWidget {
   State<AdminReportsView> createState() => _AdminReportsViewState();
 }
 
-class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerProviderStateMixin {
+class _AdminReportsViewState extends State<AdminReportsView>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedReportFilter = 'weekly'; // 'daily', 'weekly', 'monthly', 'yearly'
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  String _selectedReportFilter =
+      'weekly'; // 'daily', 'weekly', 'monthly', 'yearly'
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
   final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
   @override
@@ -81,14 +88,20 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppStateProvider>(context);
+    final provider = Provider.of<ReportProvider>(context);
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
-    
+
     final filteredTxs = _filterTransactions(provider.transactions);
     final filteredExps = _filterExpenses(provider.expenses);
 
-    double totalSales = filteredTxs.fold<double>(0, (sum, t) => sum + t.totalAmount);
-    double totalExpenses = filteredExps.fold<double>(0, (sum, e) => sum + e.amount);
+    double totalSales = filteredTxs.fold<double>(
+      0,
+      (sum, t) => sum + t.totalAmount,
+    );
+    double totalExpenses = filteredExps.fold<double>(
+      0,
+      (sum, e) => sum + e.amount,
+    );
     double netProfit = totalSales - totalExpenses;
 
     return Padding(
@@ -114,31 +127,56 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
                   const SizedBox(height: 4),
                   Text(
                     'Riwayat penjualan & pengeluaran operasional.',
-                    style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: textColor.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
-              
+
               // Dropdown
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
-                  color: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
+                  color: widget.isDark
+                      ? AppColors.cardDark
+                      : AppColors.cardLight,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: widget.isDark ? AppColors.royalHoneyGold.withOpacity(0.3) : AppColors.sageMint,
+                    color: widget.isDark
+                        ? AppColors.royalHoneyGold.withOpacity(0.3)
+                        : AppColors.sageMint,
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedReportFilter,
-                    dropdownColor: widget.isDark ? AppColors.cardDark : AppColors.cardLight,
-                    style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    dropdownColor: widget.isDark
+                        ? AppColors.cardDark
+                        : AppColors.cardLight,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                     items: const [
                       DropdownMenuItem(value: 'daily', child: Text('Hari Ini')),
-                      DropdownMenuItem(value: 'weekly', child: Text('Minggu Ini')),
-                      DropdownMenuItem(value: 'monthly', child: Text('Bulan Ini')),
-                      DropdownMenuItem(value: 'yearly', child: Text('Tahun Ini')),
+                      DropdownMenuItem(
+                        value: 'weekly',
+                        child: Text('Minggu Ini'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'monthly',
+                        child: Text('Bulan Ini'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'yearly',
+                        child: Text('Tahun Ini'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -172,29 +210,68 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Penjualan:', style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 13)),
-                    Text(currencyFormatter.format(totalSales), style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(
+                      'Total Penjualan:',
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.7),
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      currencyFormatter.format(totalSales),
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Pengeluaran:', style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 13)),
-                    Text("- ${currencyFormatter.format(totalExpenses)}", style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(
+                      'Total Pengeluaran:',
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.7),
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      "- ${currencyFormatter.format(totalExpenses)}",
+                      style: const TextStyle(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Divider(color: AppColors.sageMint, thickness: 0.5, height: 1),
+                const Divider(
+                  color: AppColors.sageMint,
+                  thickness: 0.5,
+                  height: 1,
+                ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Laba Bersih:', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(
+                      'Laba Bersih:',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
                     Text(
                       currencyFormatter.format(netProfit),
                       style: TextStyle(
-                        color: netProfit >= 0 ? AppColors.success : AppColors.error,
+                        color: netProfit >= 0
+                            ? AppColors.success
+                            : AppColors.error,
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                       ),
@@ -212,7 +289,10 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
             labelColor: AppColors.royalHoneyGold,
             unselectedLabelColor: textColor.withOpacity(0.5),
             indicatorColor: AppColors.royalHoneyGold,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
             tabs: const [
               Tab(text: 'Penjualan (Molen)'),
               Tab(text: 'Pengeluaran (Operasional)'),
@@ -240,15 +320,20 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
                           return PremiumCard(
                             isDark: widget.isDark,
                             margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Oleh: ${tx.cashierName}',
@@ -272,29 +357,41 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: widget.isDark ? AppColors.softButterCream : AppColors.goldenCaramel,
+                                        color: widget.isDark
+                                            ? AppColors.softButterCream
+                                            : AppColors.goldenCaramel,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                const Divider(color: AppColors.sageMint, thickness: 0.3, height: 1),
+                                const Divider(
+                                  color: AppColors.sageMint,
+                                  thickness: 0.3,
+                                  height: 1,
+                                ),
                                 const SizedBox(height: 6),
                                 // Item detail text
                                 Wrap(
                                   spacing: 12,
                                   children: tx.items.map((item) {
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.royalHoneyGold.withOpacity(0.1),
+                                        color: AppColors.royalHoneyGold
+                                            .withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         '${item.flavor.toUpperCase()} x${item.quantity}',
                                         style: TextStyle(
                                           fontSize: 11,
-                                          color: widget.isDark ? AppColors.softButterCream : AppColors.goldenCaramel,
+                                          color: widget.isDark
+                                              ? AppColors.softButterCream
+                                              : AppColors.goldenCaramel,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -322,19 +419,31 @@ class _AdminReportsViewState extends State<AdminReportsView> with SingleTickerPr
                           return PremiumCard(
                             isDark: widget.isDark,
                             margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            border: Border.all(color: AppColors.error.withOpacity(0.2)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            border: Border.all(
+                              color: AppColors.error.withOpacity(0.2),
+                            ),
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: AppColors.error.withOpacity(0.1),
+                                  backgroundColor: AppColors.error.withOpacity(
+                                    0.1,
+                                  ),
                                   radius: 18,
-                                  child: const Icon(Icons.arrow_downward, color: AppColors.error, size: 18),
+                                  child: const Icon(
+                                    Icons.arrow_downward,
+                                    color: AppColors.error,
+                                    size: 18,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         ex.description,
