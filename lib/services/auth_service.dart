@@ -52,4 +52,16 @@ class AuthService {
 
     return response.map<UserModel>((e) => UserModel.fromJson(e)).toList();
   }
+
+  Future<UserModel?> getUserProfile(String id) async {
+    final data = await _supabase
+        .from('profiles')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (data == null) return null;
+
+    return UserModel.fromJson(data);
+  }
 }
