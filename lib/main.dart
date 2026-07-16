@@ -17,6 +17,9 @@ import 'package:molen_king_application/services/expense_service.dart';
 import 'package:molen_king_application/providers/report_provider.dart';
 import 'package:molen_king_application/repositories/report_repository.dart';
 import 'package:molen_king_application/services/report_service.dart';
+import 'package:molen_king_application/providers/transaction_provider.dart';
+import 'package:molen_king_application/repositories/transaction_repository.dart';
+import 'package:molen_king_application/services/transaction_service.dart';
 import 'services/supabase_config.dart';
 import 'views/auth/login_view.dart';
 import 'views/shared/widgets.dart';
@@ -76,6 +79,12 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => ReportProvider(
             repository: ReportRepository(service: ReportService()),
+          ),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => TransactionProvider(
+            repository: TransactionRepository(service: TransactionService()),
           ),
         ),
       ],

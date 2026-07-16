@@ -45,4 +45,8 @@ class AuthRepository {
   Future<void> logout() async {
     await authService.logout();
   }
+
+  Future<void> deleteUser(String id) {
+    return profileService.deleteProfile(id);
+  }
 }

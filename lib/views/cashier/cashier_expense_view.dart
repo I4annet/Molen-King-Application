@@ -194,79 +194,94 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
 
             // Expenses list
             Expanded(
-              child: myExpenses.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Belum ada riwayat pengeluaran yang dicatat oleh Anda.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: textColor.withOpacity(0.5),
-                        ),
-                        textAlign: TextAlign.center,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
+                },
+                color: AppColors.royalHoneyGold,
+                child: myExpenses.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(
+                            height: 150,
+                            child: Center(
+                              child: Text(
+                                'Belum ada riwayat pengeluaran yang dicatat oleh Anda.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: textColor.withOpacity(0.5),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: myExpenses.length,
+                        itemBuilder: (context, index) {
+                          final exp = myExpenses[index];
+                          return PremiumCard(
+                            isDark: widget.isDark,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            border: Border.all(
+                              color: AppColors.error.withOpacity(0.2),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: AppColors.error.withOpacity(
+                                    0.15,
+                                  ),
+                                  child: const Icon(
+                                    Icons.trending_down,
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        exp.description,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        dateFormatter.format(exp.createdAt),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: textColor.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  "- ${currencyFormatter.format(exp.amount)}",
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.error,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: myExpenses.length,
-                      itemBuilder: (context, index) {
-                        final exp = myExpenses[index];
-                        return PremiumCard(
-                          isDark: widget.isDark,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          border: Border.all(
-                            color: AppColors.error.withOpacity(0.2),
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: AppColors.error.withOpacity(
-                                  0.15,
-                                ),
-                                child: const Icon(
-                                  Icons.trending_down,
-                                  color: AppColors.error,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      exp.description,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      dateFormatter.format(exp.createdAt),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: textColor.withOpacity(0.5),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                "- ${currencyFormatter.format(exp.amount)}",
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.error,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+              ),
             ),
           ],
         ),

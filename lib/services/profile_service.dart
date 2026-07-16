@@ -23,4 +23,8 @@ class ProfileService {
   Future<void> updateProfile(UserModel user) async {
     await _supabase.from('profiles').update(user.toJson()).eq('id', user.id);
   }
+
+  Future<void> deleteProfile(String id) async {
+    await _supabase.from('profiles').delete().eq('id', id);
+  }
 }

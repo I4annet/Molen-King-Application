@@ -147,7 +147,7 @@ class _AdminStockViewState extends State<AdminStockView> {
       },
       {
         'flavor': 'ori',
-        'name': 'Molen Rasa Ori (Original)',
+        'name': 'Molen Rasa Original',
         'color': const Color(0xFFE67E22),
         'icon': Icons.breakfast_dining,
       },
@@ -180,9 +180,15 @@ class _AdminStockViewState extends State<AdminStockView> {
           const SizedBox(height: 16),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: itemsList.length,
-              itemBuilder: (context, index) {
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await Provider.of<StockProvider>(context, listen: false).loadStocks();
+              },
+              color: AppColors.royalHoneyGold,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: itemsList.length,
+                itemBuilder: (context, index) {
                 final item = itemsList[index];
                 final flavor = item['flavor'] as String;
                 final qty = provider.stocks[flavor] ?? 0;
@@ -194,32 +200,39 @@ class _AdminStockViewState extends State<AdminStockView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
+                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: (item['color'] as Color)
-                                    .withOpacity(0.2),
-                                radius: 18,
-                                child: Icon(
-                                  item['icon'] as IconData,
-                                  color: item['color'] as Color,
-                                  size: 20,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: (item['color'] as Color)
+                                      .withOpacity(0.2),
+                                  radius: 18,
+                                  child: Icon(
+                                    item['icon'] as IconData,
+                                    color: item['color'] as Color,
+                                    size: 20,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                item['name'] as String,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    item['name'] as String,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           // Warning indicator for low stock
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -255,63 +268,63 @@ class _AdminStockViewState extends State<AdminStockView> {
                       const SizedBox(height: 16),
 
                       // Quick actions
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.error),
-                                foregroundColor: AppColors.error,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, -50),
-                              child: const Text('-50'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.error),
-                                foregroundColor: AppColors.error,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, -20),
-                              child: const Text('-20'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.royalHoneyGold,
-                                ),
-                                foregroundColor: AppColors.royalHoneyGold,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, 20),
-                              child: const Text('+20'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.royalHoneyGold,
-                                ),
-                                foregroundColor: AppColors.royalHoneyGold,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, 50),
-                              child: const Text('+50'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      //   children: [
+                      //     Expanded(
+                      //       child: OutlinedButton(
+                      //         style: OutlinedButton.styleFrom(
+                      //           side: const BorderSide(color: AppColors.error),
+                      //           foregroundColor: AppColors.error,
+                      //         ),
+                      //         onPressed: () =>
+                      //             _adjustStock(provider, flavor, -50),
+                      //         child: const Text('-50'),
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 8),
+                      //     Expanded(
+                      //       child: OutlinedButton(
+                      //         style: OutlinedButton.styleFrom(
+                      //           side: const BorderSide(color: AppColors.error),
+                      //           foregroundColor: AppColors.error,
+                      //         ),
+                      //         onPressed: () =>
+                      //             _adjustStock(provider, flavor, -20),
+                      //         child: const Text('-20'),
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 8),
+                      //     Expanded(
+                      //       child: OutlinedButton(
+                      //         style: OutlinedButton.styleFrom(
+                      //           side: const BorderSide(
+                      //             color: AppColors.royalHoneyGold,
+                      //           ),
+                      //           foregroundColor: AppColors.royalHoneyGold,
+                      //         ),
+                      //         onPressed: () =>
+                      //             _adjustStock(provider, flavor, 20),
+                      //         child: const Text('+20'),
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 8),
+                      //     Expanded(
+                      //       child: OutlinedButton(
+                      //         style: OutlinedButton.styleFrom(
+                      //           side: const BorderSide(
+                      //             color: AppColors.royalHoneyGold,
+                      //           ),
+                      //           foregroundColor: AppColors.royalHoneyGold,
+                      //         ),
+                      //         onPressed: () =>
+                      //             _adjustStock(provider, flavor, 50),
+                      //         child: const Text('+50'),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // const SizedBox(height: 16),
 
                       // Manual Input controls
                       Row(
@@ -319,18 +332,18 @@ class _AdminStockViewState extends State<AdminStockView> {
                           Expanded(
                             child: PremiumTextField(
                               controller: controller,
-                              labelText: 'Sesuaikan Manual',
+                              labelText: 'Jumlah',
                               hintText: 'Misal: 100',
                               prefixIcon: Icons.add_business_outlined,
                               isDark: widget.isDark,
                               keyboardType: TextInputType.number,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           IconButton(
                             icon: const Icon(Icons.add_box),
                             color: AppColors.royalHoneyGold,
-                            iconSize: 42,
+                            iconSize: 38,
                             onPressed: () =>
                                 _handleManualInput(provider, flavor, true),
                             tooltip: 'Tambah stok',
@@ -338,7 +351,7 @@ class _AdminStockViewState extends State<AdminStockView> {
                           IconButton(
                             icon: const Icon(Icons.indeterminate_check_box),
                             color: AppColors.goldenCaramel,
-                            iconSize: 42,
+                            iconSize: 38,
                             onPressed: () =>
                                 _handleManualInput(provider, flavor, false),
                             tooltip: 'Kurang stok',
@@ -346,7 +359,7 @@ class _AdminStockViewState extends State<AdminStockView> {
                           IconButton(
                             icon: const Icon(Icons.delete_sweep),
                             color: AppColors.error,
-                            iconSize: 36,
+                            iconSize: 32,
                             onPressed: () => _resetStock(provider, flavor),
                             tooltip: 'Reset stok',
                           ),
@@ -358,6 +371,7 @@ class _AdminStockViewState extends State<AdminStockView> {
               },
             ),
           ),
+        ),
         ],
       ),
     );

@@ -18,7 +18,7 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isDark = true;
+  bool _isDark = false;
   bool _obscurePassword = true;
 
   @override
@@ -115,7 +115,7 @@ class _LoginViewState extends State<LoginView> {
                                   Text(
                                     state.isLoading
                                         ? 'Mode Simulasi (Lokal)'
-                                        : 'Online (Supabase)',
+                                        : 'Online',
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 11,

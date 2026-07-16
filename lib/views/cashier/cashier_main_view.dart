@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 // import '../../providers/app_state_provider.dart';
 import '../../providers/auth_provider.dart';
-// import '../../providers/stock_provider.dart';
-// import '../../providers/transaction_provider.dart';
+import '../../providers/stock_provider.dart';
+import '../../providers/expense_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../models/attendance_model.dart';
 import '../shared/widgets.dart';
@@ -22,9 +22,22 @@ class CashierMainView extends StatefulWidget {
 
 class _CashierMainViewState extends State<CashierMainView> {
   int _currentIndex = 0;
-  bool _isDark = true;
+  bool _isDark = false;
   String _attendanceStatus = 'present'; // 'present', 'sick', 'leave'
   final _reasonController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AttendanceProvider>(
+        context,
+        listen: false,
+      ).loadAttendanceLogs();
+      Provider.of<StockProvider>(context, listen: false).loadStocks();
+      Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
+    });
+  }
 
   @override
   void dispose() {
@@ -66,14 +79,25 @@ class _CashierMainViewState extends State<CashierMainView> {
     );
     if (mounted && success) {
       _reasonController.clear();
+      // Refresh profil agar lastCheckIn ter-update dan UI unlock
+      await authProvider.refreshCurrentUser();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              statusText == 'present'
+                  ? 'Check-In Berhasil! Akses sistem terbuka.'
+                  : 'Status absensi berhasil dicatat!',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } else if (mounted && !success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            statusText == 'present'
-                ? 'Check-In Berhasil! Akses sistem terbuka.'
-                : 'Status absensi berhasil dicatat!',
-          ),
-          backgroundColor: AppColors.success,
+          content: Text(attendanceProvider.errorMessage ?? 'Check-In Gagal'),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -130,12 +154,16 @@ class _CashierMainViewState extends State<CashierMainView> {
     if (confirm == true && mounted) {
       final success = await attendanceProvider.checkOut(userId: user.id);
       if (mounted && success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Check-Out Berhasil! Shift Anda telah diakhiri.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        // Refresh profil agar lastCheckOut ter-update
+        await authProvider.refreshCurrentUser();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Check-Out Berhasil! Shift Anda telah diakhiri.'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
       }
     }
   }
@@ -237,6 +265,16 @@ class _CashierMainViewState extends State<CashierMainView> {
                       ),
                       onPressed: () => setState(() => _isDark = !_isDark),
                     ),
+                    if (isCheckedIn && isActive)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.exit_to_app,
+                          color: AppColors.goldenCaramel,
+                        ),
+                        onPressed: () =>
+                            _handleCheckOut(attendanceProvider, authProvider),
+                        tooltip: 'Check-Out Shift',
+                      ),
                     IconButton(
                       icon: const Icon(Icons.logout, color: AppColors.error),
                       onPressed: () => _handleLogout(authProvider),
@@ -255,14 +293,6 @@ class _CashierMainViewState extends State<CashierMainView> {
               // Main content body
               Expanded(
                 child: () {
-                  if (attendanceProvider.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.royalHoneyGold,
-                      ),
-                    );
-                  }
-
                   // 1. LOCKED SYSTEM SCREEN (IF NOT CHECKED IN AT ALL)
                   if (!isCheckedIn) {
                     return _buildLockedCheckInScreen(

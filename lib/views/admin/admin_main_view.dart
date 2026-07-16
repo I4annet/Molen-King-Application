@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/attendance_provider.dart';
+import '../../providers/stock_provider.dart';
+import '../../providers/report_provider.dart';
 import '../shared/widgets.dart';
 import '../auth/login_view.dart';
 import 'admin_dashboard_view.dart';
@@ -17,7 +20,18 @@ class AdminMainView extends StatefulWidget {
 
 class _AdminMainViewState extends State<AdminMainView> {
   int _currentIndex = 0;
-  bool _isDark = true;
+  bool _isDark = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
+      Provider.of<StockProvider>(context, listen: false).loadStocks();
+      Provider.of<ReportProvider>(context, listen: false).loadReportData();
+      Provider.of<AuthProvider>(context, listen: false).loadUsers();
+    });
+  }
 
   void _handleLogout(AuthProvider provider) async {
     await provider.logout();

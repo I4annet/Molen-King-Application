@@ -69,13 +69,18 @@ class AuthProvider extends ChangeNotifier {
       final response = await repository.login(email: email, password: password);
 
       if (response.user == null) {
-        _errorMessage = "Login gagal";
+        _errorMessage = "Login gagal. Periksa email dan sandi Anda.";
         return false;
       }
 
       _currentUser = await repository.getUserProfile(response.user!.id);
 
-      return _currentUser != null;
+      if (_currentUser == null) {
+        _errorMessage = "Profil pengguna tidak ditemukan. Pastikan email Anda sudah dikonfirmasi.";
+        return false;
+      }
+
+      return true;
     } catch (e) {
       _errorMessage = e.toString();
       return false;
@@ -103,6 +108,39 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Failed to refresh current user: $e");
+    }
+  }
+
+  Future<void> loadUsers() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _users = await repository.getUsers();
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteUser(String id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await repository.deleteUser(id);
+      await loadUsers();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
