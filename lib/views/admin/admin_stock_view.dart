@@ -194,32 +194,39 @@ class _AdminStockViewState extends State<AdminStockView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
+                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: (item['color'] as Color)
-                                    .withOpacity(0.2),
-                                radius: 18,
-                                child: Icon(
-                                  item['icon'] as IconData,
-                                  color: item['color'] as Color,
-                                  size: 20,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: (item['color'] as Color)
+                                      .withOpacity(0.2),
+                                  radius: 18,
+                                  child: Icon(
+                                    item['icon'] as IconData,
+                                    color: item['color'] as Color,
+                                    size: 20,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                item['name'] as String,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    item['name'] as String,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           // Warning indicator for low stock
                           Container(
                             padding: const EdgeInsets.symmetric(

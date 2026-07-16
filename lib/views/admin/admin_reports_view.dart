@@ -113,27 +113,30 @@ class _AdminReportsViewState extends State<AdminReportsView>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Laporan Transaksi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Laporan Transaksi',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Riwayat penjualan & pengeluaran operasional.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: textColor.withOpacity(0.6),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Riwayat penjualan & pengeluaran operasional.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor.withOpacity(0.6),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
 
               // Dropdown
               Container(

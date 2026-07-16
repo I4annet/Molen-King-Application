@@ -198,54 +198,64 @@ class _CashierStockViewState extends State<CashierStockView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header Row
-                      Row(
+                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: (item['color'] as Color)
-                                    .withOpacity(0.2),
-                                radius: 18,
-                                child: Icon(
-                                  item['icon'] as IconData,
-                                  color: item['color'] as Color,
-                                  size: 20,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: (item['color'] as Color)
+                                      .withOpacity(0.2),
+                                  radius: 18,
+                                  child: Icon(
+                                    item['icon'] as IconData,
+                                    color: item['color'] as Color,
+                                    size: 20,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                item['name'] as String,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    item['name'] as String,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                          // Stock Indicator Badge
+                          const SizedBox(width: 8),
+                          // Warning indicator for low stock
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: (item['color'] as Color).withOpacity(0.15),
+                              color: qty <= 10
+                                  ? AppColors.error.withOpacity(0.15)
+                                  : (item['color'] as Color).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: (item['color'] as Color).withOpacity(
-                                  0.4,
-                                ),
+                                color: qty <= 10
+                                    ? AppColors.error
+                                    : (item['color'] as Color).withOpacity(0.4),
                               ),
                             ),
                             child: Text(
-                              'Stok: $qty pcs',
+                              qty <= 10 ? 'KRITIS: $qty pcs' : 'Stok: $qty pcs',
                               style: TextStyle(
-                                color: widget.isDark
-                                    ? AppColors.softButterCream
-                                    : AppColors.goldenCaramel,
+                                color: qty <= 10
+                                    ? AppColors.error
+                                    : (widget.isDark
+                                          ? AppColors.softButterCream
+                                          : AppColors.goldenCaramel),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -255,101 +265,42 @@ class _CashierStockViewState extends State<CashierStockView> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Quick Adjustments Buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.error),
-                                foregroundColor: AppColors.error,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, -10),
-                              child: const Text('-10'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.error),
-                                foregroundColor: AppColors.error,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, -5),
-                              child: const Text('-5'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.royalHoneyGold,
-                                ),
-                                foregroundColor: AppColors.royalHoneyGold,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, 5),
-                              child: const Text('+5'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.royalHoneyGold,
-                                ),
-                                foregroundColor: AppColors.royalHoneyGold,
-                              ),
-                              onPressed: () =>
-                                  _adjustStock(provider, flavor, 10),
-                              child: const Text('+10'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Manual Input & Delete Block
+                      // Manual Input controls
                       Row(
                         children: [
                           Expanded(
                             child: PremiumTextField(
                               controller: controller,
-                              labelText: 'Jumlah Kustom',
-                              hintText: 'Misal: 25',
-                              prefixIcon: Icons.edit_note,
+                              labelText: 'Jumlah',
+                              hintText: 'Misal: 100',
+                              prefixIcon: Icons.add_business_outlined,
                               isDark: widget.isDark,
                               keyboardType: TextInputType.number,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           IconButton(
                             icon: const Icon(Icons.add_box),
                             color: AppColors.royalHoneyGold,
-                            iconSize: 42,
+                            iconSize: 38,
                             onPressed: () =>
                                 _handleManualInput(provider, flavor, true),
-                            tooltip: 'Tambah manual',
+                            tooltip: 'Tambah stok',
                           ),
                           IconButton(
                             icon: const Icon(Icons.indeterminate_check_box),
                             color: AppColors.goldenCaramel,
-                            iconSize: 42,
+                            iconSize: 38,
                             onPressed: () =>
                                 _handleManualInput(provider, flavor, false),
-                            tooltip: 'Kurang manual',
+                            tooltip: 'Kurang stok',
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete_sweep),
                             color: AppColors.error,
-                            iconSize: 36,
+                            iconSize: 32,
                             onPressed: () => _resetStock(provider, flavor),
-                            tooltip: 'Kosongkan stok',
+                            tooltip: 'Reset stok',
                           ),
                         ],
                       ),
