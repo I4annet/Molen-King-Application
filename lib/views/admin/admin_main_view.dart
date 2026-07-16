@@ -29,6 +29,7 @@ class _AdminMainViewState extends State<AdminMainView> {
       Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
       Provider.of<StockProvider>(context, listen: false).loadStocks();
       Provider.of<ReportProvider>(context, listen: false).loadReportData();
+      Provider.of<AuthProvider>(context, listen: false).loadUsers();
     });
   }
 

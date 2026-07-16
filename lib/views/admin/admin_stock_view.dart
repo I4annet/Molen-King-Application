@@ -180,9 +180,15 @@ class _AdminStockViewState extends State<AdminStockView> {
           const SizedBox(height: 16),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: itemsList.length,
-              itemBuilder: (context, index) {
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await Provider.of<StockProvider>(context, listen: false).loadStocks();
+              },
+              color: AppColors.royalHoneyGold,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: itemsList.length,
+                itemBuilder: (context, index) {
                 final item = itemsList[index];
                 final flavor = item['flavor'] as String;
                 final qty = provider.stocks[flavor] ?? 0;
@@ -365,6 +371,7 @@ class _AdminStockViewState extends State<AdminStockView> {
               },
             ),
           ),
+        ),
         ],
       ),
     );

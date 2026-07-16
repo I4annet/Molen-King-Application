@@ -309,45 +309,185 @@ class _AdminReportsViewState extends State<AdminReportsView>
               controller: _tabController,
               children: [
                 // TRANSACTION TAB
-                filteredTxs.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Tidak ada transaksi penjualan di periode ini.',
-                          style: TextStyle(color: textColor.withOpacity(0.5)),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: filteredTxs.length,
-                        itemBuilder: (context, index) {
-                          final tx = filteredTxs[index];
-                          return PremiumCard(
-                            isDark: widget.isDark,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await Provider.of<ReportProvider>(context, listen: false).loadReportData();
+                  },
+                  color: AppColors.royalHoneyGold,
+                  child: filteredTxs.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(
+                              height: 250,
+                              child: Center(
+                                child: Text(
+                                  'Tidak ada transaksi penjualan di periode ini.',
+                                  style: TextStyle(color: textColor.withOpacity(0.5)),
+                                ),
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
+                          ],
+                        )
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: filteredTxs.length,
+                          itemBuilder: (context, index) {
+                            final tx = filteredTxs[index];
+                            return PremiumCard(
+                              isDark: widget.isDark,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Oleh: ${tx.cashierName}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: textColor,
+                                            ),
+                                          ),
+                                          Text(
+                                            dateFormatter.format(tx.createdAt),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: textColor.withOpacity(0.5),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        currencyFormatter.format(tx.totalAmount),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: widget.isDark
+                                              ? AppColors.softButterCream
+                                              : AppColors.goldenCaramel,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Divider(
+                                    color: AppColors.sageMint,
+                                    thickness: 0.3,
+                                    height: 1,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  // Item detail text
+                                  Wrap(
+                                    spacing: 12,
+                                    children: tx.items.map((item) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.royalHoneyGold
+                                              .withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          '${item.flavor.toUpperCase()} x${item.quantity}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: widget.isDark
+                                                ? AppColors.softButterCream
+                                                : AppColors.goldenCaramel,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+
+                // EXPENSE TAB
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await Provider.of<ReportProvider>(context, listen: false).loadReportData();
+                  },
+                  color: AppColors.royalHoneyGold,
+                  child: filteredExps.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(
+                              height: 250,
+                              child: Center(
+                                child: Text(
+                                  'Tidak ada catatan pengeluaran di periode ini.',
+                                  style: TextStyle(color: textColor.withOpacity(0.5)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: filteredExps.length,
+                          itemBuilder: (context, index) {
+                            final ex = filteredExps[index];
+                            return PremiumCard(
+                              isDark: widget.isDark,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              border: Border.all(
+                                color: AppColors.error.withOpacity(0.2),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: AppColors.error.withOpacity(
+                                      0.1,
+                                    ),
+                                    radius: 18,
+                                    child: const Icon(
+                                      Icons.arrow_downward,
+                                      color: AppColors.error,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Oleh: ${tx.cashierName}',
+                                          ex.description,
                                           style: TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                             color: textColor,
                                           ),
                                         ),
+                                        const SizedBox(height: 4),
                                         Text(
-                                          dateFormatter.format(tx.createdAt),
+                                          'Oleh: ${ex.cashierName} • ${dateFormatter.format(ex.createdAt)}',
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: textColor.withOpacity(0.5),
@@ -355,131 +495,21 @@ class _AdminReportsViewState extends State<AdminReportsView>
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      currencyFormatter.format(tx.totalAmount),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: widget.isDark
-                                            ? AppColors.softButterCream
-                                            : AppColors.goldenCaramel,
-                                      ),
+                                  ),
+                                  Text(
+                                    "- ${currencyFormatter.format(ex.amount)}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.error,
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                const Divider(
-                                  color: AppColors.sageMint,
-                                  thickness: 0.3,
-                                  height: 1,
-                                ),
-                                const SizedBox(height: 6),
-                                // Item detail text
-                                Wrap(
-                                  spacing: 12,
-                                  children: tx.items.map((item) {
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.royalHoneyGold
-                                            .withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        '${item.flavor.toUpperCase()} x${item.quantity}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: widget.isDark
-                                              ? AppColors.softButterCream
-                                              : AppColors.goldenCaramel,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-
-                // EXPENSE TAB
-                filteredExps.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Tidak ada catatan pengeluaran di periode ini.',
-                          style: TextStyle(color: textColor.withOpacity(0.5)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: filteredExps.length,
-                        itemBuilder: (context, index) {
-                          final ex = filteredExps[index];
-                          return PremiumCard(
-                            isDark: widget.isDark,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            border: Border.all(
-                              color: AppColors.error.withOpacity(0.2),
-                            ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: AppColors.error.withOpacity(
-                                    0.1,
-                                  ),
-                                  radius: 18,
-                                  child: const Icon(
-                                    Icons.arrow_downward,
-                                    color: AppColors.error,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        ex.description,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Oleh: ${ex.cashierName} • ${dateFormatter.format(ex.createdAt)}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: textColor.withOpacity(0.5),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  "- ${currencyFormatter.format(ex.amount)}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                ),
               ],
             ),
           ),
