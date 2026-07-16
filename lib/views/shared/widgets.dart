@@ -36,7 +36,7 @@ class PremiumCard extends StatelessWidget {
     this.height,
     this.padding,
     this.margin,
-    this.isDark = true,
+    this.isDark = false,
     this.border,
     this.shadow,
   });
@@ -95,7 +95,7 @@ class PremiumTextField extends StatelessWidget {
     required this.hintText,
     required this.prefixIcon,
     this.isPassword = false,
-    this.isDark = true,
+    this.isDark = false,
     this.keyboardType = TextInputType.text,
     this.suffixIcon,
     this.validator,
@@ -255,7 +255,7 @@ class ArtisanBackground extends StatelessWidget {
   final Widget child;
   final bool isDark;
 
-  const ArtisanBackground({super.key, required this.child, this.isDark = true});
+  const ArtisanBackground({super.key, required this.child, this.isDark = false});
 
   @override
   Widget build(BuildContext context) {

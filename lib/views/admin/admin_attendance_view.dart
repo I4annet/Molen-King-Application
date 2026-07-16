@@ -354,9 +354,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     Map<String, Map<String, int>> summaries,
   ) {
     if (cashiers.isEmpty) {
-      return const PremiumCard(
-        isDark: true,
-        child: Center(child: Text('Belum ada data absensi.')),
+      return PremiumCard(
+        isDark: widget.isDark,
+        child: const Center(child: Text('Belum ada data absensi.')),
       );
     }
 

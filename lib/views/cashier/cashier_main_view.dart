@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 // import '../../providers/app_state_provider.dart';
 import '../../providers/auth_provider.dart';
-// import '../../providers/stock_provider.dart';
-// import '../../providers/transaction_provider.dart';
+import '../../providers/stock_provider.dart';
+import '../../providers/expense_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../models/attendance_model.dart';
 import '../shared/widgets.dart';
@@ -22,9 +22,19 @@ class CashierMainView extends StatefulWidget {
 
 class _CashierMainViewState extends State<CashierMainView> {
   int _currentIndex = 0;
-  bool _isDark = true;
+  bool _isDark = false;
   String _attendanceStatus = 'present'; // 'present', 'sick', 'leave'
   final _reasonController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
+      Provider.of<StockProvider>(context, listen: false).loadStocks();
+      Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
+    });
+  }
 
   @override
   void dispose() {
@@ -270,14 +280,6 @@ class _CashierMainViewState extends State<CashierMainView> {
               // Main content body
               Expanded(
                 child: () {
-                  if (attendanceProvider.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.royalHoneyGold,
-                      ),
-                    );
-                  }
-
                   // 1. LOCKED SYSTEM SCREEN (IF NOT CHECKED IN AT ALL)
                   if (!isCheckedIn) {
                     return _buildLockedCheckInScreen(
