@@ -21,6 +21,7 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
   late TabController _tabController;
   final dateFormatter = DateFormat('dd/MM/yyyy');
   final timeFormatter = DateFormat('HH:mm');
+  String _selectedReportFilter = 'weekly';
 
   @override
   void initState() {
@@ -39,11 +40,13 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     super.dispose();
   }
 
+
+
   // Attendance report calculator
   Map<String, Map<String, int>> _calculateAttendanceSummary(
     List<AttendanceModel> logs,
     List<UserModel> cashiers,
-    bool isWeekly,
+    String filter,
   ) {
     final Map<String, Map<String, int>> summaries = {};
 
@@ -54,12 +57,16 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
 
     final now = DateTime.now();
     DateTime startRange;
-    if (isWeekly) {
-      // 7 days ago
+    if (filter == 'daily') {
+      startRange = DateTime(now.year, now.month, now.day);
+    } else if (filter == 'weekly') {
       startRange = now.subtract(const Duration(days: 7));
-    } else {
-      // 30 days ago
+    } else if (filter == 'monthly') {
       startRange = now.subtract(const Duration(days: 30));
+    } else if (filter == 'yearly') {
+      startRange = now.subtract(const Duration(days: 365));
+    } else {
+      startRange = DateTime(now.year, now.month, now.day);
     }
 
     final periodLogs = logs
@@ -88,21 +95,17 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     final authProvider = context.watch<AuthProvider>();
     final attendanceProvider = context.watch<AttendanceProvider>();
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
+    final filter = _selectedReportFilter;
 
     final cashiers = authProvider.users
         .where((u) => u.role == 'cashier')
         .toList();
     final activeCashiers = cashiers.where((u) => u.isActive).toList();
 
-    final weeklySummaries = _calculateAttendanceSummary(
+    final attendanceSummaries = _calculateAttendanceSummary(
       attendanceProvider.attendanceLogs,
       cashiers,
-      true,
-    );
-    final monthlySummaries = _calculateAttendanceSummary(
-      attendanceProvider.attendanceLogs,
-      cashiers,
-      false,
+      _selectedReportFilter,
     );
 
     return Scaffold(
@@ -222,8 +225,14 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                   // TAB 1: LIST OF EMPLOYEES
                   RefreshIndicator(
                     onRefresh: () async {
-                      await Provider.of<AuthProvider>(context, listen: false).loadUsers();
-                      await Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
+                      await Provider.of<AuthProvider>(
+                        context,
+                        listen: false,
+                      ).loadUsers();
+                      await Provider.of<AttendanceProvider>(
+                        context,
+                        listen: false,
+                      ).loadAttendanceLogs();
                     },
                     color: AppColors.royalHoneyGold,
                     child: cashiers.isEmpty
@@ -235,7 +244,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                                 child: Center(
                                   child: Text(
                                     'Belum ada karyawan terdaftar.',
-                                    style: TextStyle(color: textColor.withOpacity(0.5)),
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.5),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -247,92 +258,113 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                             itemBuilder: (context, index) {
                               final c = cashiers[index];
                               return PremiumCard(
-                                  isDark: widget.isDark,
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: c.isActive
-                                            ? AppColors.success.withOpacity(0.15)
-                                            : textColor.withOpacity(0.1),
-                                        child: Icon(
-                                          Icons.person,
-                                          color: c.isActive
-                                              ? AppColors.success
-                                              : textColor.withOpacity(0.6),
-                                        ),
+                                isDark: widget.isDark,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: c.isActive
+                                          ? AppColors.success.withOpacity(0.15)
+                                          : textColor.withOpacity(0.1),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: c.isActive
+                                            ? AppColors.success
+                                            : textColor.withOpacity(0.6),
                                       ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              c.name,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                                color: textColor,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: c.isActive
-                                                    ? AppColors.success.withOpacity(0.15)
-                                                    : Colors.grey.withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                c.isActive ? 'Aktif' : 'Off Shift',
-                                                style: TextStyle(
-                                                  color: c.isActive
-                                                      ? AppColors.success
-                                                      : Colors.grey,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 9,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.visibility_outlined),
-                                            color: AppColors.royalHoneyGold,
-                                            iconSize: 22,
-                                            onPressed: () => _showEmployeeDetails(c),
-                                            tooltip: 'Detail Karyawan',
+                                          Text(
+                                            c.name,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: textColor,
+                                            ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline),
-                                            color: AppColors.error,
-                                            iconSize: 22,
-                                            onPressed: () => _handleDeleteEmployee(authProvider, c),
-                                            tooltip: 'Hapus Karyawan',
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: c.isActive
+                                                  ? AppColors.success
+                                                        .withOpacity(0.15)
+                                                  : Colors.grey.withOpacity(
+                                                      0.15,
+                                                    ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              c.isActive
+                                                  ? 'Aktif'
+                                                  : 'Off Shift',
+                                              style: TextStyle(
+                                                color: c.isActive
+                                                    ? AppColors.success
+                                                    : Colors.grey,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 9,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.visibility_outlined,
+                                          ),
+                                          color: AppColors.royalHoneyGold,
+                                          iconSize: 22,
+                                          onPressed: () =>
+                                              _showEmployeeDetails(c),
+                                          tooltip: 'Detail Karyawan',
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                          ),
+                                          color: AppColors.error,
+                                          iconSize: 22,
+                                          onPressed: () =>
+                                              _handleDeleteEmployee(
+                                                authProvider,
+                                                c,
+                                              ),
+                                          tooltip: 'Hapus Karyawan',
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
 
                   // TAB 2: ATTENDANCE REPORTS
                   RefreshIndicator(
                     onRefresh: () async {
-                      await Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
-                      await Provider.of<AuthProvider>(context, listen: false).loadUsers();
+                      await Provider.of<AttendanceProvider>(
+                        context,
+                        listen: false,
+                      ).loadAttendanceLogs();
+                      await Provider.of<AuthProvider>(
+                        context,
+                        listen: false,
+                      ).loadUsers();
                     },
                     color: AppColors.royalHoneyGold,
                     child: SingleChildScrollView(
@@ -340,24 +372,80 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Weekly Report Section
-                          _buildReportSectionTitle(
-                            'Laporan Kehadiran Mingguan (7 Hari Terakhir)',
-                            textColor,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Ringkasan Kehadiran Karyawan',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Period Dropdown Selector
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: widget.isDark
+                                      ? AppColors.cardDark
+                                      : AppColors.cardLight,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: widget.isDark
+                                        ? AppColors.royalHoneyGold.withOpacity(0.3)
+                                        : AppColors.sageMint,
+                                  ),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _selectedReportFilter,
+                                    dropdownColor: widget.isDark
+                                        ? AppColors.cardDark
+                                        : AppColors.cardLight,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'daily',
+                                        child: Text('Hari Ini'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'weekly',
+                                        child: Text('7 Hari Terakhir'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'monthly',
+                                        child: Text('30 Hari Terakhir'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'yearly',
+                                        child: Text('1 Tahun Terakhir'),
+                                      ),
+                                    ],
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          _selectedReportFilter = val;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 10),
-                          _buildReportList(cashiers, weeklySummaries),
-
-                          const SizedBox(height: 24),
-
-                          // Monthly Report Section
-                          _buildReportSectionTitle(
-                            'Laporan Kehadiran Bulanan (30 Hari Terakhir)',
-                            textColor,
-                          ),
-                          const SizedBox(height: 10),
-                          _buildReportList(cashiers, monthlySummaries),
-
+                          const SizedBox(height: 16),
+                          _buildReportList(cashiers, attendanceSummaries),
                           const SizedBox(height: 20),
                         ],
                       ),
@@ -380,20 +468,7 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     );
   }
 
-  Widget _buildReportSectionTitle(String title, Color textColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: textColor,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildReportList(
     List<UserModel> cashiers,
@@ -499,9 +574,13 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             final isDark = widget.isDark;
-            final dialogTextColor = isDark ? AppColors.textLight : AppColors.textDark;
+            final dialogTextColor = isDark
+                ? AppColors.textLight
+                : AppColors.textDark;
             return AlertDialog(
-              backgroundColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+              backgroundColor: isDark
+                  ? AppColors.cardDark
+                  : AppColors.cardLight,
               title: Text(
                 'Tambah Karyawan Baru',
                 style: TextStyle(
@@ -523,7 +602,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           hintText: 'Nama Karyawan',
                           prefixIcon: Icons.person_outline,
                           isDark: isDark,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Nama wajib diisi' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Nama wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         PremiumTextField(
@@ -533,7 +614,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           prefixIcon: Icons.email_outlined,
                           isDark: isDark,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (v) => (v == null || !v.contains('@')) ? 'Email tidak valid' : null,
+                          validator: (v) => (v == null || !v.contains('@'))
+                              ? 'Email tidak valid'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         PremiumTextField(
@@ -543,7 +626,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           prefixIcon: Icons.phone_android_outlined,
                           isDark: isDark,
                           keyboardType: TextInputType.phone,
-                          validator: (v) => (v == null || v.isEmpty) ? 'No. HP wajib diisi' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'No. HP wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         PremiumTextField(
@@ -552,7 +637,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           hintText: 'Surabaya / Malang',
                           prefixIcon: Icons.location_city_outlined,
                           isDark: isDark,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Asal kota wajib diisi' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Asal kota wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         PremiumTextField(
@@ -564,7 +651,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           isDark: isDark,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isObscured ? Icons.visibility_off : Icons.visibility,
+                              isObscured
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: dialogTextColor.withOpacity(0.5),
                             ),
                             onPressed: () {
@@ -614,9 +703,11 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                       passwordController.dispose();
 
                       Navigator.pop(dialogContext);
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Mendaftarkan karyawan baru...')),
+                        const SnackBar(
+                          content: Text('Mendaftarkan karyawan baru...'),
+                        ),
                       );
 
                       final success = await authProvider.register(
@@ -643,7 +734,8 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                authProvider.errorMessage ?? 'Gagal mendaftarkan karyawan',
+                                authProvider.errorMessage ??
+                                    'Gagal mendaftarkan karyawan',
                               ),
                               backgroundColor: AppColors.error,
                             ),
@@ -704,12 +796,16 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
                   ),
                   _buildDetailRow(
                     'Check-In Terakhir',
-                    user.lastCheckIn != null ? formatter.format(user.lastCheckIn!) : '-',
+                    user.lastCheckIn != null
+                        ? formatter.format(user.lastCheckIn!)
+                        : '-',
                     dialogTextColor,
                   ),
                   _buildDetailRow(
                     'Check-Out Terakhir',
-                    user.lastCheckOut != null ? formatter.format(user.lastCheckOut!) : '-',
+                    user.lastCheckOut != null
+                        ? formatter.format(user.lastCheckOut!)
+                        : '-',
                     dialogTextColor,
                   ),
                 ],
@@ -727,7 +823,12 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, Color textColor, {Color? valueColor}) {
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    Color textColor, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Column(
@@ -773,9 +874,7 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
           ),
           content: Text(
             'Apakah Anda yakin ingin menghapus profil "${user.name}" dari sistem?',
-            style: TextStyle(
-              color: dialogTextColor.withOpacity(0.8),
-            ),
+            style: TextStyle(color: dialogTextColor.withOpacity(0.8)),
           ),
           actions: [
             TextButton(
@@ -796,9 +895,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
     );
 
     if (confirm == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Menghapus ${user.name}...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Menghapus ${user.name}...')));
 
       final success = await authProvider.deleteUser(user.id);
       if (mounted && success) {
@@ -811,7 +910,9 @@ class _AdminAttendanceViewState extends State<AdminAttendanceView>
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authProvider.errorMessage ?? 'Gagal menghapus karyawan'),
+            content: Text(
+              authProvider.errorMessage ?? 'Gagal menghapus karyawan',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
