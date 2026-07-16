@@ -30,7 +30,10 @@ class _CashierMainViewState extends State<CashierMainView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AttendanceProvider>(context, listen: false).loadAttendanceLogs();
+      Provider.of<AttendanceProvider>(
+        context,
+        listen: false,
+      ).loadAttendanceLogs();
       Provider.of<StockProvider>(context, listen: false).loadStocks();
       Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
     });
@@ -262,6 +265,16 @@ class _CashierMainViewState extends State<CashierMainView> {
                       ),
                       onPressed: () => setState(() => _isDark = !_isDark),
                     ),
+                    if (isCheckedIn && isActive)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.exit_to_app,
+                          color: AppColors.goldenCaramel,
+                        ),
+                        onPressed: () =>
+                            _handleCheckOut(attendanceProvider, authProvider),
+                        tooltip: 'Check-Out Shift',
+                      ),
                     IconButton(
                       icon: const Icon(Icons.logout, color: AppColors.error),
                       onPressed: () => _handleLogout(authProvider),
