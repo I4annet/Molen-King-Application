@@ -13,9 +13,9 @@ class StockProvider extends ChangeNotifier {
   List<StockModel> _stockList = [];
 
   final Map<String, double> _molenPrices = {
-    'keju': 8000,
-    'ori': 7000,
-    'coklat': 9000,
+    'keju': 1000,
+    'ori': 1000,
+    'coklat': 1000,
   };
 
   bool get isLoading => _isLoading;

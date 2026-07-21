@@ -44,8 +44,9 @@ class TransactionModel {
     List<dynamic>? itemsJson,
   ]) {
     final List<TransactionItem> parsedItems = [];
-    if (itemsJson != null) {
-      for (var item in itemsJson) {
+    final rawItems = itemsJson ?? json['transaction_items'] as List<dynamic>?;
+    if (rawItems != null) {
+      for (var item in rawItems) {
         parsedItems.add(TransactionItem.fromJson(item as Map<String, dynamic>));
       }
     }

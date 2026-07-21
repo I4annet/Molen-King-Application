@@ -15,8 +15,8 @@ class ReportService {
     final response = await supabase
         .from('transactions')
         .select('*, transaction_items(*)')
-        .gte('created_at', start.toIso8601String())
-        .lte('created_at', end.toIso8601String())
+        .gte('created_at', start.toUtc().toIso8601String())
+        .lte('created_at', end.toUtc().toIso8601String())
         .order('created_at', ascending: false);
 
     return response
@@ -37,8 +37,8 @@ class ReportService {
     final response = await supabase
         .from('expenses')
         .select()
-        .gte('created_at', start.toIso8601String())
-        .lte('created_at', end.toIso8601String())
+        .gte('created_at', start.toUtc().toIso8601String())
+        .lte('created_at', end.toUtc().toIso8601String())
         .order('created_at', ascending: false);
 
     return response
