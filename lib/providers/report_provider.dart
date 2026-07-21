@@ -40,11 +40,38 @@ class ReportProvider extends ChangeNotifier {
 
   // --- REPORT METRICS ---
 
-  int getMolenSoldQuantity(String flavor) {
+  int getMolenSoldQuantity(String flavor, [String? period]) {
+    final List<TransactionModel> txs;
+    if (period != null) {
+      final now = DateTime.now();
+      DateTime start;
+      switch (period) {
+        case 'daily':
+          start = DateTime(now.year, now.month, now.day);
+          break;
+        case 'weekly':
+          start = now.subtract(Duration(days: now.weekday - 1));
+          start = DateTime(start.year, start.month, start.day);
+          break;
+        case 'monthly':
+          start = DateTime(now.year, now.month, 1);
+          break;
+        case 'yearly':
+          start = DateTime(now.year, 1, 1);
+          break;
+        default:
+          start = DateTime(now.year, now.month, now.day);
+      }
+      final end = now.add(const Duration(seconds: 1));
+      txs = _getTransactionsInPeriod(start, end);
+    } else {
+      txs = _transactions;
+    }
+
     int total = 0;
-    for (var tx in _transactions) {
+    for (var tx in txs) {
       for (var item in tx.items) {
-        if (item.flavor == flavor) {
+        if (item.flavor.toLowerCase() == flavor.toLowerCase()) {
           total += item.quantity;
         }
       }
@@ -52,9 +79,36 @@ class ReportProvider extends ChangeNotifier {
     return total;
   }
 
-  int getTotalMolenSold() {
+  int getTotalMolenSold([String? period]) {
+    final List<TransactionModel> txs;
+    if (period != null) {
+      final now = DateTime.now();
+      DateTime start;
+      switch (period) {
+        case 'daily':
+          start = DateTime(now.year, now.month, now.day);
+          break;
+        case 'weekly':
+          start = now.subtract(Duration(days: now.weekday - 1));
+          start = DateTime(start.year, start.month, start.day);
+          break;
+        case 'monthly':
+          start = DateTime(now.year, now.month, 1);
+          break;
+        case 'yearly':
+          start = DateTime(now.year, 1, 1);
+          break;
+        default:
+          start = DateTime(now.year, now.month, now.day);
+      }
+      final end = now.add(const Duration(seconds: 1));
+      txs = _getTransactionsInPeriod(start, end);
+    } else {
+      txs = _transactions;
+    }
+
     int total = 0;
-    for (var tx in _transactions) {
+    for (var tx in txs) {
       for (var item in tx.items) {
         total += item.quantity;
       }
