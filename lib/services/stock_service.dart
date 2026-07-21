@@ -26,14 +26,24 @@ class StockService {
         .from('stocks')
         .select()
         .eq('flavor', flavor)
-        .single();
+        .maybeSingle();
+
+    if (stock == null) {
+      throw Exception("Stok $flavor tidak ditemukan");
+    }
 
     final currentQty = stock['quantity'] as int;
+
+    final newQty = currentQty + amountChange;
+
+    if (newQty < 0) {
+      throw Exception('Stok ${flavor.toUpperCase()} tidak mencukupi');
+    }
 
     await supabase
         .from('stocks')
         .update({
-          'quantity': currentQty + amountChange,
+          'quantity': newQty,
           'last_updated': DateTime.now().toIso8601String(),
         })
         .eq('flavor', flavor);

@@ -1,8 +1,10 @@
 import 'package:molen_king_application/models/transaction_model.dart';
+import 'package:molen_king_application/services/stock_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TransactionService {
   final SupabaseClient supabase = Supabase.instance.client;
+  final StockService stockService = StockService();
 
   Future<void> createTransaction({
     required String cashierId,
@@ -34,6 +36,10 @@ class TransactionService {
           'quantity': item.quantity,
           'price': item.price,
         });
+        await StockService().updateStock(
+          flavor: item.flavor,
+          amountChange: -item.quantity,
+        );
       }
     } catch (e) {
       throw Exception("Gagal membuat transaksi: $e");
