@@ -31,6 +31,10 @@ class _AdminReportsViewState extends State<AdminReportsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ReportProvider>().loadReportData();
+    });
   }
 
   @override
@@ -311,7 +315,10 @@ class _AdminReportsViewState extends State<AdminReportsView>
                 // TRANSACTION TAB
                 RefreshIndicator(
                   onRefresh: () async {
-                    await Provider.of<ReportProvider>(context, listen: false).loadReportData();
+                    await Provider.of<ReportProvider>(
+                      context,
+                      listen: false,
+                    ).loadReportData();
                   },
                   color: AppColors.royalHoneyGold,
                   child: filteredTxs.isEmpty
@@ -323,7 +330,9 @@ class _AdminReportsViewState extends State<AdminReportsView>
                               child: Center(
                                 child: Text(
                                   'Tidak ada transaksi penjualan di periode ini.',
-                                  style: TextStyle(color: textColor.withOpacity(0.5)),
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.5),
+                                  ),
                                 ),
                               ),
                             ),
@@ -370,7 +379,9 @@ class _AdminReportsViewState extends State<AdminReportsView>
                                         ],
                                       ),
                                       Text(
-                                        currencyFormatter.format(tx.totalAmount),
+                                        currencyFormatter.format(
+                                          tx.totalAmount,
+                                        ),
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -400,7 +411,9 @@ class _AdminReportsViewState extends State<AdminReportsView>
                                         decoration: BoxDecoration(
                                           color: AppColors.royalHoneyGold
                                               .withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: Text(
                                           '${item.flavor.toUpperCase()} x${item.quantity}',
@@ -425,7 +438,10 @@ class _AdminReportsViewState extends State<AdminReportsView>
                 // EXPENSE TAB
                 RefreshIndicator(
                   onRefresh: () async {
-                    await Provider.of<ReportProvider>(context, listen: false).loadReportData();
+                    await Provider.of<ReportProvider>(
+                      context,
+                      listen: false,
+                    ).loadReportData();
                   },
                   color: AppColors.royalHoneyGold,
                   child: filteredExps.isEmpty
@@ -437,7 +453,9 @@ class _AdminReportsViewState extends State<AdminReportsView>
                               child: Center(
                                 child: Text(
                                   'Tidak ada catatan pengeluaran di periode ini.',
-                                  style: TextStyle(color: textColor.withOpacity(0.5)),
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.5),
+                                  ),
                                 ),
                               ),
                             ),
@@ -461,9 +479,8 @@ class _AdminReportsViewState extends State<AdminReportsView>
                               child: Row(
                                 children: [
                                   CircleAvatar(
-                                    backgroundColor: AppColors.error.withOpacity(
-                                      0.1,
-                                    ),
+                                    backgroundColor: AppColors.error
+                                        .withOpacity(0.1),
                                     radius: 18,
                                     child: const Icon(
                                       Icons.arrow_downward,
