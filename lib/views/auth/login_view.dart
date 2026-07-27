@@ -147,11 +147,10 @@ class _LoginViewState extends State<LoginView> {
                     // Logo & Brand Header
                     Center(
                       child: Container(
-                        height: 90,
-                        width: 90,
+                        height: 100,
+                        width: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.royalHoneyGold.withOpacity(0.15),
                           border: Border.all(
                             color: AppColors.royalHoneyGold,
                             width: 2.5,
@@ -163,11 +162,10 @@ class _LoginViewState extends State<LoginView> {
                               spreadRadius: 2,
                             ),
                           ],
-                        ),
-                        child: const Icon(
-                          Icons.storefront_rounded,
-                          size: 48,
-                          color: AppColors.royalHoneyGold,
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/logo.jpg'),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
@@ -196,7 +194,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     Center(
                       child: Text(
-                        'Premium Artisan Molen Cashier System',
+                        'Sistem Manajemen Penjualan Molen King',
                         style: TextStyle(
                           fontSize: 12,
                           color: textColor.withOpacity(0.6),
