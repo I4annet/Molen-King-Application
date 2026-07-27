@@ -25,6 +25,14 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final reportProvider = context.read<ReportProvider>();
+      reportProvider.loadReportData();
+    });
+  }
+
   Widget build(BuildContext context) {
     // final transactionProvider = context.watch<TransactionProvider>();
     // final expenseProvider = context.watch<ExpenseProvider>();
@@ -35,9 +43,15 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final textColor = widget.isDark ? AppColors.textLight : AppColors.textDark;
 
     // Calculate real-time sold counts by flavor
-    final soldKeju = reportProvider.getMolenSoldQuantity('keju', _selectedPeriod);
+    final soldKeju = reportProvider.getMolenSoldQuantity(
+      'keju',
+      _selectedPeriod,
+    );
     final soldOri = reportProvider.getMolenSoldQuantity('ori', _selectedPeriod);
-    final soldCoklat = reportProvider.getMolenSoldQuantity('coklat', _selectedPeriod);
+    final soldCoklat = reportProvider.getMolenSoldQuantity(
+      'coklat',
+      _selectedPeriod,
+    );
     final totalSold = reportProvider.getTotalMolenSold(_selectedPeriod);
 
     return RefreshIndicator(
@@ -106,7 +120,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         fontSize: 13,
                       ),
                       items: const [
-                        DropdownMenuItem(value: 'daily', child: Text('Hari Ini')),
+                        DropdownMenuItem(
+                          value: 'daily',
+                          child: Text('Hari Ini'),
+                        ),
                         DropdownMenuItem(
                           value: 'weekly',
                           child: Text('Minggu Ini'),
