@@ -46,13 +46,24 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (response.user == null) {
-        _errorMessage = "Registrasi gagal";
+        _errorMessage = "Registrasi gagal.";
         return false;
       }
 
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('user already exists') || errStr.contains('already registered') || errStr.contains('conflict')) {
+        _errorMessage = "Email sudah terdaftar. Silakan gunakan email lain.";
+      } else if (errStr.contains('network') || errStr.contains('socketexception') || errStr.contains('failed host lookup')) {
+        _errorMessage = "Gagal terhubung ke server. Periksa koneksi internet Anda.";
+      } else if (errStr.contains('weak password') || errStr.contains('password should be at least')) {
+        _errorMessage = "Kata sandi terlalu lemah. Gunakan minimal 6 karakter.";
+      } else if (errStr.contains('invalid email')) {
+        _errorMessage = "Format alamat email tidak valid.";
+      } else {
+        _errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('AuthException: ', '');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -69,20 +80,31 @@ class AuthProvider extends ChangeNotifier {
       final response = await repository.login(email: email, password: password);
 
       if (response.user == null) {
-        _errorMessage = "Login gagal. Periksa email dan sandi Anda.";
+        _errorMessage = "Email tidak terdaftar atau kata sandi salah.";
         return false;
       }
 
       _currentUser = await repository.getUserProfile(response.user!.id);
 
       if (_currentUser == null) {
-        _errorMessage = "Profil pengguna tidak ditemukan. Pastikan email Anda sudah dikonfirmasi.";
+        _errorMessage = "Profil pengguna tidak ditemukan.";
         return false;
       }
 
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('invalid login credentials') || errStr.contains('invalid credentials') || errStr.contains('invalid email')) {
+        _errorMessage = "Email tidak terdaftar atau kata sandi salah.";
+      } else if (errStr.contains('email not confirmed')) {
+        _errorMessage = "Email belum dikonfirmasi. Silakan periksa inbox Anda.";
+      } else if (errStr.contains('network') || errStr.contains('socketexception') || errStr.contains('failed host lookup')) {
+        _errorMessage = "Gagal terhubung ke server. Periksa koneksi internet Anda.";
+      } else if (errStr.contains('too many requests')) {
+        _errorMessage = "Terlalu banyak percobaan masuk. Silakan coba beberapa saat lagi.";
+      } else {
+        _errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('AuthException: ', '');
+      }
       return false;
     } finally {
       _isLoading = false;
