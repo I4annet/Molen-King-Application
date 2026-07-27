@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:molen_king_application/providers/stock_provider.dart';
 import 'package:molen_king_application/providers/transaction_provider.dart';
+import 'package:molen_king_application/providers/report_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
@@ -88,6 +89,8 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
 
     if (mounted) {
       if (success) {
+        await context.read<StockProvider>().loadStocks();
+        await context.read<ReportProvider>().loadReportData();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Transaksi Berhasil Disimpan!'),
@@ -170,6 +173,7 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                 final price = stockProvider.molenPrices[flavor] ?? 0.0;
                 final stock = stockProvider.stocks[flavor] ?? 0;
                 final cartQty = _cart[flavor] ?? 0;
+                final remainingStock = stock - cartQty;
 
                 return PremiumCard(
                   isDark: widget.isDark,
@@ -226,16 +230,16 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: stock > 10
+                                color: remainingStock > 10
                                     ? AppColors.sageMint.withOpacity(0.1)
                                     : AppColors.error.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Stok: $stock pcs',
+                                'Stok: $remainingStock pcs',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: stock > 10
+                                  color: remainingStock > 10
                                       ? (widget.isDark
                                             ? AppColors.sageMint
                                             : AppColors.goldenCaramel)
@@ -268,7 +272,7 @@ class _CashierTransactionViewState extends State<CashierTransactionView> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            color: stock > 0
+                            color: remainingStock > 0
                                 ? AppColors.royalHoneyGold
                                 : textColor.withOpacity(0.3),
                             onPressed: () => _increment(flavor, stock),
