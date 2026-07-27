@@ -33,6 +33,30 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     });
   }
 
+  Widget _legend(Color color, String text, Color textColor) {
+    return Row(
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     // final transactionProvider = context.watch<TransactionProvider>();
     // final expenseProvider = context.watch<ExpenseProvider>();
@@ -53,6 +77,58 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       _selectedPeriod,
     );
     final totalSold = reportProvider.getTotalMolenSold(_selectedPeriod);
+
+    final isChartEmpty = soldKeju == 0 && soldOri == 0 && soldCoklat == 0;
+
+    final pieSections = isChartEmpty
+        ? [
+            PieChartSectionData(
+              value: 1.0,
+              title: '0',
+              color: Colors.grey.withOpacity(0.3),
+              radius: 40,
+              titleStyle: TextStyle(
+                color: textColor.withOpacity(0.6),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            )
+          ]
+        : [
+            PieChartSectionData(
+              value: soldKeju.toDouble(),
+              title: '$soldKeju',
+              color: const Color(0xFFF1C40F),
+              radius: 40,
+              titleStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            PieChartSectionData(
+              value: soldOri.toDouble(),
+              title: '$soldOri',
+              color: const Color(0xFFE67E22),
+              radius: 40,
+              titleStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            PieChartSectionData(
+              value: soldCoklat.toDouble(),
+              title: '$soldCoklat',
+              color: const Color(0xFF795548),
+              radius: 40,
+              titleStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ];
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -154,66 +230,37 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             // Real-time Sold breakdown
             PremiumCard(
               isDark: widget.isDark,
+              height: 280,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    '📊 Penjualan Molen Real-Time (Semua Shift)',
+                    "Komposisi Penjualan Molen",
                     style: TextStyle(
-                      fontSize: 14,
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildFlavorSoldStat(
-                        'Keju',
-                        soldKeju,
-                        const Color(0xFFF1C40F),
+                  const SizedBox(height: 20),
+
+                  Expanded(
+                    child: PieChart(
+                      PieChartData(
+                        centerSpaceRadius: 35,
+                        sectionsSpace: 3,
+                        sections: pieSections,
                       ),
-                      _buildFlavorSoldStat(
-                        'Ori',
-                        soldOri,
-                        const Color(0xFFE67E22),
-                      ),
-                      _buildFlavorSoldStat(
-                        'Coklat',
-                        soldCoklat,
-                        const Color(0xFF795548),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(
-                    color: AppColors.sageMint,
-                    thickness: 0.5,
-                    height: 1,
-                  ),
-                  const SizedBox(height: 12),
+
+                  const SizedBox(height: 15),
+
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(
-                        'Total Terjual:',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: textColor.withOpacity(0.8),
-                        ),
-                      ),
-                      Text(
-                        '$totalSold pcs',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: widget.isDark
-                              ? AppColors.softButterCream
-                              : AppColors.goldenCaramel,
-                        ),
-                      ),
+                      _legend(const Color(0xFFF1C40F), "Keju", textColor),
+                      _legend(const Color(0xFFE67E22), "Ori", textColor),
+                      _legend(const Color(0xFF795548), "Coklat", textColor),
                     ],
                   ),
                 ],
@@ -273,24 +320,27 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         style: TextStyle(color: textColor.withOpacity(0.5)),
                       ),
                     )
-                  : LineChart(
-                      LineChartData(
+                  : BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY:
+                            chartData
+                                .map((e) => e.value)
+                                .reduce((a, b) => a > b ? a : b) *
+                            1.2,
+
+                        borderData: FlBorderData(show: false),
+
                         gridData: FlGridData(
                           show: true,
                           drawVerticalLine: false,
-                          getDrawingHorizontalLine: (value) => FlLine(
-                            color: widget.isDark
-                                ? Colors.white10
-                                : Colors.black12,
-                            strokeWidth: 1,
-                          ),
                         ),
+
                         titlesData: FlTitlesData(
-                          show: true,
-                          rightTitles: const AxisTitles(
+                          topTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
                           ),
-                          topTitles: const AxisTitles(
+                          rightTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
                           ),
                           leftTitles: const AxisTitles(
@@ -299,60 +349,48 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              reservedSize: 30,
-                              interval: 1,
                               getTitlesWidget: (value, meta) {
-                                final int index = value.toInt();
-                                if (index >= 0 && index < chartData.length) {
-                                  return SideTitleWidget(
-                                    axisSide: meta.axisSide,
-                                    child: Text(
-                                      chartData[index].key,
-                                      style: TextStyle(
-                                        color: textColor.withOpacity(0.6),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  );
+                                final index = value.toInt();
+
+                                if (index >= chartData.length) {
+                                  return const SizedBox();
                                 }
-                                return const Text('');
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    chartData[index].key,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: textColor.withOpacity(.7),
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                           ),
                         ),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: chartData.asMap().entries.map((entry) {
-                              return FlSpot(
-                                entry.key.toDouble(),
-                                entry.value.value,
-                              );
-                            }).toList(),
-                            isCurved: true,
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.royalHoneyGold,
-                                AppColors.goldenCaramel,
-                              ],
-                            ),
-                            barWidth: 4,
-                            isStrokeCapRound: true,
-                            dotData: const FlDotData(show: true),
-                            belowBarData: BarAreaData(
-                              show: true,
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.royalHoneyGold.withOpacity(0.2),
-                                  AppColors.goldenCaramel.withOpacity(0.0),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
+
+                        barGroups: List.generate(chartData.length, (index) {
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: chartData[index].value,
+                                width: 20,
+                                borderRadius: BorderRadius.circular(6),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    AppColors.goldenCaramel,
+                                    AppColors.royalHoneyGold,
+                                  ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
+                            ],
+                          );
+                        }),
                       ),
                     ),
             ),
