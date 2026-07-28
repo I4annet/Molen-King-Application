@@ -94,194 +94,203 @@ class _CashierExpenseViewState extends State<CashierExpenseView> {
     final myExpenses = expenseProvider.expenses
         .where((e) => e.cashierId == currentUser?.id)
         .toList();
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
+      },
+      color: AppColors.royalHoneyGold,
       child: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Catat Pengeluaran Operasional',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Masukkan nominal dan beri keterangan/komentar untuk pengeluaran toko.',
-              style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
-            ),
-            const SizedBox(height: 16),
-
-            PremiumCard(
-              isDark: widget.isDark,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PremiumTextField(
-                    controller: _amountController,
-                    labelText: 'Nominal Pengeluaran (Rupiah)',
-                    hintText: 'Misal: 50000',
-                    prefixIcon: Icons.money_off,
-                    isDark: widget.isDark,
-                    keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Nominal harus diisi' : null,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.all(16.0),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  Text(
+                    'Catat Pengeluaran Operasional',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Masukkan nominal dan beri keterangan/komentar untuk pengeluaran toko.',
+                    style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
                   ),
                   const SizedBox(height: 16),
-                  PremiumTextField(
-                    controller: _commentController,
-                    labelText: 'Keterangan / Komentar Pengeluaran',
-                    hintText:
-                        'Beli minyak goreng, isi ulang gas LPG, listrik, dll.',
-                    prefixIcon: Icons.comment_outlined,
+
+                  PremiumCard(
                     isDark: widget.isDark,
-                    validator: (v) => (v == null || v.isEmpty)
-                        ? 'Keterangan wajib diisi'
-                        : null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        PremiumTextField(
+                          controller: _amountController,
+                          labelText: 'Nominal Pengeluaran (Rupiah)',
+                          hintText: 'Misal: 50000',
+                          prefixIcon: Icons.money_off,
+                          isDark: widget.isDark,
+                          keyboardType: TextInputType.number,
+                          validator: (v) =>
+                              (v == null || v.isEmpty) ? 'Nominal harus diisi' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        PremiumTextField(
+                          controller: _commentController,
+                          labelText: 'Keterangan / Komentar Pengeluaran',
+                          hintText:
+                              'Beli minyak goreng, isi ulang gas LPG, listrik, dll.',
+                          prefixIcon: Icons.comment_outlined,
+                          isDark: widget.isDark,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Keterangan wajib diisi'
+                              : null,
+                        ),
+                        const SizedBox(height: 20),
+                        PremiumButton(
+                          text: 'Simpan Pengeluaran',
+                          isInitializing: expenseProvider.isLoading,
+                          onPressed: () =>
+                              _saveExpense(expenseProvider, authProvider),
+                          icon: Icons.save_outlined,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  PremiumButton(
-                    text: 'Simpan Pengeluaran',
-                    isInitializing: expenseProvider.isLoading,
-                    onPressed: () =>
-                        _saveExpense(expenseProvider, authProvider),
-                    icon: Icons.save_outlined,
+                  const SizedBox(height: 24),
+
+                  // History Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Riwayat Pengeluaran Saya',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.goldenCaramel.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Total: ${myExpenses.length} transaksi',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: widget.isDark
+                                ? AppColors.softButterCream
+                                : AppColors.goldenCaramel,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                  const SizedBox(height: 12),
+                ]),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // History Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Riwayat Pengeluaran Saya',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.goldenCaramel.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Total: ${myExpenses.length} transaksi',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: widget.isDark
-                          ? AppColors.softButterCream
-                          : AppColors.goldenCaramel,
-                      fontWeight: FontWeight.bold,
+            if (myExpenses.isEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                sliver: SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 150,
+                    child: Center(
+                      child: Text(
+                        'Belum ada riwayat pengeluaran yang dicatat oleh Anda.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: textColor.withOpacity(0.5),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Expenses list
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await Provider.of<ExpenseProvider>(context, listen: false).loadExpenses();
-                },
-                color: AppColors.royalHoneyGold,
-                child: myExpenses.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            child: Center(
-                              child: Text(
-                                'Belum ada riwayat pengeluaran yang dicatat oleh Anda.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: textColor.withOpacity(0.5),
-                                ),
-                                textAlign: TextAlign.center,
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final exp = myExpenses[index];
+                      return PremiumCard(
+                        isDark: widget.isDark,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: Border.all(
+                          color: AppColors.error.withOpacity(0.2),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: AppColors.error.withOpacity(
+                                0.15,
+                              ),
+                              child: const Icon(
+                                Icons.trending_down,
+                                color: AppColors.error,
                               ),
                             ),
-                          ),
-                        ],
-                      )
-                    : ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: myExpenses.length,
-                        itemBuilder: (context, index) {
-                          final exp = myExpenses[index];
-                          return PremiumCard(
-                            isDark: widget.isDark,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    exp.description,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateFormatter.format(exp.createdAt),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: textColor.withOpacity(0.5),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            border: Border.all(
-                              color: AppColors.error.withOpacity(0.2),
+                            Text(
+                              "- ${currencyFormatter.format(exp.amount)}",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.error,
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: AppColors.error.withOpacity(
-                                    0.15,
-                                  ),
-                                  child: const Icon(
-                                    Icons.trending_down,
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        exp.description,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        dateFormatter.format(exp.createdAt),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: textColor.withOpacity(0.5),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  "- ${currencyFormatter.format(exp.amount)}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                      );
+                    },
+                    childCount: myExpenses.length,
+                  ),
+                ),
               ),
+            // Extra bottom spacing to ensure keyboard doesn't cover anything completely
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 24),
             ),
           ],
         ),

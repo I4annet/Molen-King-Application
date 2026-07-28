@@ -50,7 +50,7 @@ class AuthService {
           'Profile berhasil disimpan: id=${response.user!.id}, role=$role',
         );
       } catch (e) {
-        debugPrint('Gagal menyimpan profile ke Supabase: $e');
+        debugPrint('Gagal menyimpan profile. $e');
         // Jangan rethrow — user sudah terdaftar di auth,
         // profile bisa dibuat saat login pertama kali
       }
@@ -123,6 +123,43 @@ class AuthService {
         }
 
         return null;
+      }
+
+      // Sync profile from metadata if some fields are missing in DB
+      final authUser = _supabase.auth.currentUser;
+      if (authUser != null && authUser.id == id) {
+        final meta = authUser.userMetadata ?? {};
+        final name = meta['name'] as String? ?? '';
+        final phone = meta['phone'] as String? ?? '';
+        final origin = meta['origin'] as String? ?? '';
+        
+        bool needUpdate = false;
+        final Map<String, dynamic> updates = {};
+        
+        if ((data['phone'] as String? ?? '').isEmpty && phone.isNotEmpty) {
+          updates['phone'] = phone;
+          data['phone'] = phone;
+          needUpdate = true;
+        }
+        if ((data['origin'] as String? ?? '').isEmpty && origin.isNotEmpty) {
+          updates['origin'] = origin;
+          data['origin'] = origin;
+          needUpdate = true;
+        }
+        if ((data['name'] as String? ?? '').isEmpty && name.isNotEmpty) {
+          updates['name'] = name;
+          data['name'] = name;
+          needUpdate = true;
+        }
+        
+        if (needUpdate) {
+          try {
+            await _supabase.from('profiles').update(updates).eq('id', id);
+            debugPrint('Profile synced from metadata to DB: $updates');
+          } catch (syncErr) {
+            debugPrint('Failed to sync profile from metadata: $syncErr');
+          }
+        }
       }
 
       final user = UserModel.fromJson(data);
