@@ -50,7 +50,7 @@ class AuthService {
           'Profile berhasil disimpan: id=${response.user!.id}, role=$role',
         );
       } catch (e) {
-        debugPrint('Gagal menyimpan profile ke Supabase: $e');
+        debugPrint('Gagal menyimpan profile. $e');
         // Jangan rethrow — user sudah terdaftar di auth,
         // profile bisa dibuat saat login pertama kali
       }
